@@ -214,3 +214,15 @@ mkdir -p ~/.config/zsh
 echo "alias gs='git status'" >> ~/.config/zsh/aliases.zsh
 echo 'source ~/.config/zsh/aliases.zsh' >> ~/.zshrc
 source ~/.zshrc
+
+# ─────────────────────
+# 📝 GIT command
+# ─────────────────────
+- git config --global credential.helper store  # This tells Git to save credentials to a plain text file after first successful login.
+- ~/.git-credentials # Git will store this token in this directories
+
+# ➤ Optional: Check or remove stored config
+View : git config --global --get credential.helper
+Remove : git config --global --unset credential.helper
+
+
