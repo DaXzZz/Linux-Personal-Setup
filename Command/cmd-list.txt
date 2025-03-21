@@ -1,0 +1,216 @@
+# ─────────────────────────────
+# 📦 PACKAGE & AUR MANAGEMENT
+# ─────────────────────────────
+- sudo pacman -Syu                                   # Update all official packages
+- sudo pacman -S <package_name>                      # Install a package
+- sudo pacman -Rns <package_name>                    # Remove a package with dependencies
+- sudo pacman -Scc                                   # Clear pacman cache
+- pacman -Q | grep <package_name>                    # Check if package is installed
+- pacman -Qi <package>                               # Show detailed info of a package
+- pacman -Ql <package>                               # Show files installed by a package
+- pacman -Qdt                                        # List orphaned packages
+- sudo pacman -Rns $(pacman -Qdtq)                   # Remove orphaned packages
+- sudo paccache -r                                   # Clear old cached packages
+
+- paru -Syu                                          # Update all AUR packages
+- paru -S <package_name>                             # Install a package from AUR
+- paru -Qdt                                          # List AUR orphan packages
+
+# ─────────────────────
+# 📁 FILE OPERATIONS
+# ─────────────────────
+- du -sh *                                           # Show size of items in current directory
+- df -h                                              # Show disk usage in human-readable form
+- cp -r "source" "destination"                       # Copy files or directories
+- mv "source" "destination"                          # Move or rename files/directories
+- rm -rf "folder/"                                   # Delete folder recursively
+- find . -name "file.txt"                            # Find file by name in current path
+- locate "file.txt"                                  # Locate file (requires updatedb)
+- unzip "file.zip"                                   # Extract zip file
+- unzip "file.zip" -d "destination"                  # Extract to specific folder
+- tar -xvf "file.tar.gz"                             # Extract tar.gz
+- tar -cvf "archive.tar" "folder/"                   # Create tar archive
+
+# ─────────────────────
+# ⚙️ SYSTEMD & SERVICES
+# ─────────────────────
+- systemctl list-units --failed                      # List failed services
+- systemctl list-unit-files --type=service | grep enabled   # Show enabled services
+- sudo systemctl enable <service>                    # Enable a service at startup
+- sudo systemctl disable <service>                   # Disable a service
+- sudo systemctl mask <service>                      # Block service from running entirely
+- journalctl -xe                                     # View system logs
+- journalctl -b -1                                   # View logs from last boot
+- sudo systemctl reboot --firmware-setup             # Reboot into BIOS/UEFI setup
+
+# ─────────────────────
+# 🌐 NETWORKING TOOLS
+# ─────────────────────
+- ip a                                               # Show IP address and interfaces
+- ping archlinux.org                                 # Test internet connectivity
+- curl -s ifconfig.me                                # Get public IP address
+- nmcli dev wifi list                                # List Wi-Fi networks
+- nmtui                                              # TUI for network management
+
+# ─────────────────────
+# 🔊 AUDIO / PIPEWIRE
+# ─────────────────────
+- pactl list short sinks                             # List audio outputs
+- pactl set-default-sink <sink_name>                 # Set default audio sink
+- wpctl status                                       # Show PipeWire status
+- wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.5          # Set volume to 50%
+
+# ─────────────────────
+# 🎧 BLUETOOTH CONTROL
+# ─────────────────────
+- sudo systemctl start bluetooth                     # Start Bluetooth service
+- sudo systemctl stop bluetooth                      # Stop Bluetooth service
+- sudo systemctl enable bluetooth                    # Enable at boot
+- sudo systemctl disable bluetooth                   # Disable auto-start
+- systemctl status bluetooth                         # Check status
+- bluetoothctl scan on                               # Start scanning
+- bluetoothctl connect <device_mac>                  # Connect to a device
+- bluetoothctl disconnect <device_mac>               # Disconnect device
+
+# ─────────────────────
+# 🖥️ HYPRLAND SPECIFIC
+# ─────────────────────
+- nano ~/.config/hypr/hyprland.conf                  # Edit main Hyprland config
+- hyprctl reload                                     # Reload config
+- hyprctl clients                                    # List running windows
+- hyprctl monitors                                   # List monitor info
+- hyprctl activewindow                               # Show current focused window
+- hyprctl dispatch workspace <N>                     # Switch to workspace N
+- hyprctl dispatch exec workspace 3 "app"            # Launch app in workspace 3
+- hyprctl dispatch togglefloating                    # Toggle floating mode
+- hyprctl dispatch focuswindow last                  # Focus last window
+- hyprctl dispatch togglespecialworkspace 1          # Toggle special workspace
+- nano ~/.config/hypr/monitors.conf                  # Edit monitor layout
+- nano ~/.config/hypr/workspaces.conf                # Configure workspace assignment
+
+# ─────────────────────
+# 🖼️ WAYLAND UTILITIES (grim, slurp, wl-clipboard)
+# ─────────────────────
+- grim -g "$(slurp)" ~/Pictures/snap.png             # Screenshot selected area
+- wl-copy < file.txt                                 # Copy content to clipboard
+- wl-paste > file.txt                                # Paste from clipboard
+
+# ─────────────────────
+# 🐚 SHELL & TERMINAL
+# ─────────────────────
+- echo $SHELL                                        # Show current shell
+- chsh -s /bin/zsh                                   # Change default shell to zsh
+- exec bash                                          # Temporarily switch to bash
+- bindkey                                            # List zsh keybindings
+- which <command>                                    # Show command path
+- tldr <command>                                     # Show simplified command usage
+- bat <file>                                         # View file with syntax highlight
+- btop                                               # Modern system monitor (install via AUR)
+
+# ─────────────────────
+# 🧩 KITTY TERMINAL
+# ─────────────────────
+- nano ~/.config/kitty/kitty.conf                    # Edit kitty config
+- grep font ~/.config/kitty/kitty.conf               # Check current font
+- echo "font_family JetBrainsMono Nerd Font" >> ~/.config/kitty/kitty.conf && killall kitty && kitty  # Apply font change
+
+# ─────────────────────
+# 💻 GPU / PERFORMANCE
+# ─────────────────────
+- glxinfo | grep "OpenGL renderer"                   # Check which GPU is in use
+- lspci | grep VGA                                   # List video devices
+- nvtop                                              # Real-time GPU monitor (NVIDIA)
+- powertop                                           # Power usage monitor
+- tlp-stat                                           # Show TLP power status
+
+# ─────────────────────
+# ⚙️ GRUB CONFIGURATION
+# ─────────────────────
+- sudo nano /etc/default/grub                        # Edit GRUB config
+- sudo grub-mkconfig -o /boot/grub/grub.cfg          # Apply GRUB changes
+- ls /boot/grub/fonts/                               # View available fonts
+- sudo grub-mkfont -s 24 -o /boot/grub/fonts/DejaVuSansMono24.pf2 /usr/share/fonts/TTF/DejaVuSansMono.ttf   # Convert font
+- grep GRUB_THEME /etc/default/grub                  # Check current GRUB theme
+- sudo pacman -S ttf-dejavu                          # Install font for GRUB
+- sudo pacman -S terminus-font                       # Install font for terminal/boot
+
+# ─────────────────────
+# 🧩 SDDM (Login Manager)
+# ─────────────────────
+- sudo pacman -S sddm                                # Install SDDM
+- sudo systemctl enable sddm.service                 # Enable at startup
+- sudo systemctl start sddm.service                  # Start SDDM
+- sudo systemctl stop sddm.service                   # Stop SDDM
+- sudo systemctl disable sddm.service                # Disable auto-start
+- sudo systemctl status sddm.service                 # Check SDDM status
+- sudo systemctl mask sddm.service                   # Completely disable SDDM
+- sudo pacman -Rns sddm                              # Uninstall SDDM
+- sudo rm -rf /etc/sddm.conf /etc/sddm.conf.d        # Remove config files
+- sudo rm -rf /usr/share/sddm                        # Remove SDDM shared files
+- rm -rf ~/.config/sddm                              # Remove user config (if exists)
+- ls /usr/share/sddm/themes/                         # List available themes
+- sudo nano /etc/sddm.conf                           # Manually change theme
+- sudo pacman -S sddm-kcm                            # GUI module to set theme (KDE)
+- sudo pacman -S bibata-cursor-theme ttf-dejavu      # Install cursor/font for SDDM
+- paru -S sddm-theme-chili                           # Install AUR theme
+
+# ─────────────────────
+# 🔐 SYSTEM MONITORING & INFO
+# ─────────────────────
+- top                                                # Default process viewer
+- htop                                               # Interactive process viewer
+- btop                                               # Modern alternative to htop
+- free -h                                            # Show memory usage
+- uptime                                             # Show system uptime and load
+- uname -r                                           # Show kernel version
+- neofetch                                           # Show system info
+- inxi -Fazy                                         # Full hardware/system info
+- lsblk -f                                           # Show block devices & filesystems
+- df -h                                              # Show mounted disk usage
+- loginctl session-status                            # Show session info
+- journalctl -p 3 -xb                                # Show system errors from last boot
+
+# ─────────────────────
+# 📦 BACKUP: TIMESHiFT
+# ─────────────────────
+- paru -S timeshift                                  # Install from AUR
+- sudo timeshift-launcher                            # Open GUI
+- sudo timeshift --create --comments "Backup" --tags D     # Create backup
+- sudo timeshift --list                              # List backups
+- sudo timeshift --restore                           # Restore from backup
+- sudo timeshift --delete --snapshot <SNAPSHOT>      # Delete a snapshot
+- sudo timeshift --delete-all                        # Delete all backups
+- sudo -E timeshift-launcher                         # Launch with env vars
+
+# ─────────────────────
+# 🧪 BETTERDISCORD FIXES
+# ─────────────────────
+- rm -rf ~/.config/BetterDiscord/plugins/*           # Delete all plugins
+- rm -rf ~/.config/BetterDiscord                     # Full reset
+- betterdiscord-installer reinstall                  # Reinstall
+- betterdiscord-installer upgrade                    # Update
+- killall Discord && discord                         # Restart Discord
+- sudo pacman -Rns betterdiscord-installer           # Uninstall BetterDiscord
+- wget <url> -O ~/.config/BetterDiscord/plugins/OPluginLibrary.plugin.js  # Fix missing plugin
+- reboot                                             # Restart after changes
+
+# ─────────────────────
+# 📝 SHELL ALIASES & CUSTOM SHORTCUTS
+# ─────────────────────
+- alias update="sudo pacman -Syu"                    # Temporary alias
+- alias                                              # List all aliases
+- unalias update                                     # Remove alias
+
+# ➤ Add permanent alias (ZSH)
+echo "alias useful='cat ~/useful-cmd/cmd-list.txt'" >> ~/.zshrc
+source ~/.zshrc
+
+# ➤ Add permanent alias (Bash)
+echo "alias cls='clear'" >> ~/.bashrc
+source ~/.bashrc
+
+# ➤ Recommended alias structure
+mkdir -p ~/.config/zsh
+echo "alias gs='git status'" >> ~/.config/zsh/aliases.zsh
+echo 'source ~/.config/zsh/aliases.zsh' >> ~/.zshrc
+source ~/.zshrc

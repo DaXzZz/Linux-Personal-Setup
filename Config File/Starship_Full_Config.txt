@@ -1,0 +1,62 @@
+# ======= 🌟 Starship Prompt Config 🌟 =======
+# Theme: Cyberpunk + Minimal + Git + Time + Custom Symbols
+# -------------------------------------------
+# Defines the prompt layout using background colors to separate sections
+format = """
+[](#8be9fd)\
+$username\
+[](bg:#50fa7b fg:#8be9fd)\
+$directory\
+[](fg:#50fa7b bg:#ffb86c)\
+$git_branch\
+$git_status\
+[](fg:#ffb86c bg:#ff5555)\
+$cmd_duration\
+[](fg:#ff5555 bg:none)\
+\n$character"""
+
+# ========== 🔹 USERNAME ==========
+[username]
+style_user = "bold #282a36 bg:#8be9fd"  # User name color
+format = '[ $user ]($style)'  # Display format
+show_always = true  # Always show username
+
+# ========== 📂 DIRECTORY ==========
+[directory]
+style = "bold #282a36 bg:#50fa7b"  # Directory color
+format = "[ $path ]($style)"  # Display format
+truncation_length = 3  # Shorten to last 3 folders
+truncate_to_repo = false  # Don’t truncate in Git repos
+
+# ========== 🌿 GIT BRANCH ==========
+[git_branch]
+style = "bold #282a36 bg:#ffb86c"  # Git branch color
+format = "[  $branch ]($style)"  # Git branch icon
+
+# ========== 🔄 GIT STATUS ==========
+[git_status]
+style = "bold #282a36 bg:#ffb86c"
+format = '([+$ahead]($style) )([-$behind]($style) )([~$modified]($style) )'
+
+# ========== ⏳ COMMAND DURATION ==========
+[cmd_duration]
+min_time = 500  # Show if longer than 500ms
+style = "bold #282a36 bg:#ff5555"
+format = "[ ⏳ $duration ]($style)"  # Format: ⏳ 2s
+
+# ========== ✨ PROMPT SYMBOL ==========
+[character]
+success_symbol = "[➜](bold #50fa7b)"  # Success symbol
+error_symbol = "[✗](bold #ff5555)"  # Error symbol
+
+# ========== 🕐 TIME ==========
+[time]
+disabled = false  # Enable time display
+format = "[🕒 $time]($style) "
+style = "bold blue"
+time_format = "%H:%M:%S"  # Time format
+
+# ========== ⚙️ CUSTOM SYMBOLS ==========
+[shell]
+style = "bold cyan"
+format = "[  $indicator]($style) "  # Terminal icon

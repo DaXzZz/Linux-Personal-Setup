@@ -1,0 +1,66 @@
+Fixing Mouse & Monitor Issues in SDDM and Hyprland
+==================================================
+
+🖥️ Setup:
+---------
+- Main monitor: DP-1 (horizontal, 1920x1080@165Hz)
+- Secondary monitor: HDMI-A-1 (vertical, 1920x1080 rotated left)
+
+
+Part 1: Fix SDDM Showing on Wrong Monitor
+-----------------------------------------
+
+✅ Disable HDMI monitor in SDDM (login screen only)
+
+1. Edit SDDM X setup script:
+   sudo nano /usr/share/sddm/scripts/Xsetup
+
+2. Paste:
+   #!/bin/sh
+   xrandr --output HDMI-0 --off
+   xrandr --output DP-0 --primary --mode 1920x1080 --rate 165 --pos 0x0 --rotate normal
+
+> HDMI-0 and DP-0 are names used by X11 during SDDM, verified via xrandr.
+
+
+Part 2: Fix Hyprland Mouse Starting on Wrong Monitor
+-----------------------------------------------------
+
+✅ Step 1: Configure monitor layout
+
+Edit:
+  nano ~/.config/hypr/monitors.conf
+
+Paste:
+  monitor=DP-1,1920x1080@165,1080x840,1
+  monitor=HDMI-A-1,1920x1080@60,0x0,1,transform,1
+
+> Places HDMI-A-1 vertically on the left, and centers DP-1 to the right.
+
+✅ Step 2: Move mouse to correct monitor after login
+
+Edit:
+  nano ~/.config/hypr/UserConfigs/Startup_Apps.conf
+
+Add at the bottom:
+  exec-once = hyprctl dispatch movecursor 2000 1000
+
+> Adjust coordinates to fall inside DP-1 resolution.
+
+
+✅ Optional Step 3: Ensure correct workspace starts
+
+In:
+  ~/.config/hypr/workspaces.conf
+
+Ensure:
+  workspace=1,monitor:DP-1,default:true
+
+> Remove any workspace=2 lines that assign it to HDMI-A-1.
+
+
+✅ Final Result:
+---------------
+- SDDM shows only on your main monitor (DP-1)
+- Mouse starts on correct monitor at login and after
+- Layout is respected in Hyprland and GNOME
