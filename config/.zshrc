@@ -33,8 +33,8 @@ alias l='ls -l'
 alias la='ls -a'
 alias lla='ls -la'
 alias lt='ls --tree'
-alias useful='cat ~/useful-cmd/cmd-list.txt'
-alias sw='/home/ryu/Arch_Hyprland_Config/config/audio_toggle.sh'
+alias useful='cat /home/ryu/Arch_Hyprland_Config/cmd/cmd-list.txt'
+alias sw='/home/ryu/Arch_Hyprland_Config/scripts/audio_toggle.sh'
 
 # Set-up FZF key bindings (CTRL R for fuzzy history finder)
 source <(fzf --zsh)
