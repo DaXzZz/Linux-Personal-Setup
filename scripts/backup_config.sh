@@ -14,6 +14,7 @@ FILES=(
     "$HOME/.config/starship.toml"
     "$HOME/.config/hypr/UserConfigs/WindowRules.conf"
     "$HOME/.config/hypr/UserConfigs/Startup_Apps.conf"
+    "$HOME/.config/hypr/UserConfigs/UserSettings.conf"
 )
 
 # Copy each file

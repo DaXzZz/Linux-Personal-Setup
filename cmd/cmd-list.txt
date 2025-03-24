@@ -224,5 +224,3 @@ source ~/.zshrc
 # ➤ Optional: Check or remove stored config
 View : git config --global --get credential.helper
 Remove : git config --global --unset credential.helper
-
-

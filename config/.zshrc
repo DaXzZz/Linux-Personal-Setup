@@ -23,7 +23,6 @@ source $ZSH/oh-my-zsh.sh
 #pokemon-colorscripts --no-title -s -r | fastfetch -c $HOME/.config/fastfetch/config-pokemon.jsonc --logo-type file-raw --logo-height 10 --logo-width 5 --logo -
 fastfetch -c $HOME/.config/fastfetch/config-compact.jsonc
 
-
 # fastfetch. Will be disabled if above colorscript was chosen to install
 #fastfetch -c $HOME/.config/fastfetch/config-compact.jsonc
 
@@ -43,17 +42,5 @@ HISTFILE=~/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
 setopt appendhistory
-
-#HISTFILE=~/.zsh_history
-#HISTSIZE=5000
-#SAVEHIST=5000
-
-#setopt appendhistory         # Append commands to history file
-#setopt incappendhistory      # Save each command immediately after execution
-#setopt sharehistory          # Share history across multiple terminals
-#setopt histignoredups        # Ignore duplicate commands
-#setopt histignorespace       # Ignore commands that start with a space
-#setopt histreduceblanks      # Remove extra spaces in commands
-#setopt histverify            # Don't execute history commands immediately
 
 eval "$(starship init zsh)"
