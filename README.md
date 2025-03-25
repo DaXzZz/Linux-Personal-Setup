@@ -1,68 +1,38 @@
 # Arch Hyprland Config 🚀
 
-This repository contains my personalized configurations and scripts for Arch Linux running the **Hyprland** window manager. It's optimized for productivity, aesthetics, and ease of use, perfect for daily workflows.
+Personal setup for Arch Linux with Hyprland, optimized for multi-monitor, visual theming, and terminal productivity.
 
-## 📂 What's Included
+## 📦 Included Configs
+- **Hyprland:** Dual monitor layout, workspace defaults, cursor fix
+- **Kitty:** JetBrainsMono font, clean UI
+- **GRUB:** Theme + NVIDIA boot args
+- **ZSH:** Oh-My-Zsh with plugins & fastfetch
+- **Starship:** Cyberpunk-style prompt with Git + clock
+- **SDDM Fix:** Disables secondary screen at login, cursor fix
 
-- **Hyprland Configurations:** Optimized multi-monitor setup, custom workspaces, and keybindings.
-- **Kitty Terminal Configuration:** Enhanced terminal visuals, fonts, and overall experience.
-- **GRUB Bootloader Configuration:** Customized boot menu with Nvidia modeset optimizations.
-- **ZSH and Oh-My-Zsh:** Streamlined shell experience with powerful plugins.
-- **Starship Prompt:** A minimal, cyberpunk-themed prompt integrated with Git status, command duration, and more.
-- **SDDM Fix:** Solutions for multi-monitor issues during login and mouse placement.
+## 🖥️ Setup
+- **Main:** DP-1 (landscape 1080p@165Hz)
+- **Secondary:** HDMI-A-1 (vertical 1080p@60Hz)
 
-## 🖥️ System Setup
-- **Main Monitor:** `DP-1` (1920x1080@165Hz, Landscape)
-- **Secondary Monitor:** `HDMI-A-1` (1920x1080@60Hz, Vertical rotated left)
+## 🛠 Quick Install
+```bash
+git clone https://github.com/DaXzZz/Arch-Hyprland-Config.git
+cd Arch-Hyprland-Config
+```
+Copy configs:
+```bash
+cp -r .config/hypr ~/.config/
+cp -r .config/kitty ~/.config/
+cp .zshrc ~/
+cp .config/starship.toml ~/.config/
+sudo cp etc/default/grub /etc/default/grub
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+```
 
-## ⚙️ Configuration Highlights
-- **SDDM Login:** Automatically disables secondary HDMI monitor at login for seamless focus on the main display.
-- **Hyprland Multi-monitor:** Corrects mouse placement and workspace behavior.
-- **Kitty Terminal:** JetBrains Mono Nerd Font, clean padding, and optimized rendering.
-- **GRUB:** Graphical menu with Vimix theme, Nvidia modesetting tweaks, and optimal resolutions.
-- **Starship Prompt:** Custom icons, Git integration, and time tracking to improve CLI productivity.
-
-## 🚧 Installation Guide
-
-1. **Clone the Repository:**
-   ```sh
-   git clone https://github.com/DaXzZz/Arch-Hyprland-Config.git
-   cd Arch-Hyprland-Config
-   ```
-
-2. **Apply Configurations:**
-   - **Hyprland:**
-     ```sh
-     cp -r .config/hypr ~/.config/
-     ```
-   - **Kitty Terminal:**
-     ```sh
-     cp -r .config/kitty ~/.config/
-     ```
-   - **GRUB:**
-     ```sh
-     sudo cp etc/default/grub /etc/default/grub
-     sudo grub-mkconfig -o /boot/grub/grub.cfg
-     ```
-   - **ZSH:**
-     ```sh
-     cp .zshrc ~/ && source ~/.zshrc
-     ```
-   - **Starship:**
-     ```sh
-     cp -r .config/starship.toml ~/.config/
-     ```
-
-3. **Reboot** to apply all changes.
-
-## 📸 Screenshots
-(Feel free to add screenshots of your setup here)
-
-## 🙌 Contribute
-
-Feel free to fork, suggest improvements, or submit issues and PRs. Contributions and suggestions are always welcome!
+## 💡 Tips
+- `hyprctl reload` to refresh Hyprland
+- Mount issues? See `ntfs_mount_fix_guide.txt`
 
 ---
 
-Enjoy your fresh Arch Linux Hyprland setup! 🌟
-
+Make your Hyprland feel like home! ✨
