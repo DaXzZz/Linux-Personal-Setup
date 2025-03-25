@@ -19,9 +19,9 @@ if [[ ! -d "$PROJECT_ROOT" ]]; then
 fi
 
 # Paths used across scripts
-TARGET_DIR="${PROJECT_ROOT}/config"         # 📁  Storage of config files for installation (used in install.sh)
-SCRIPTS_DIR="${PROJECT_ROOT}/scripts"       # ⚙️  Script file storage such as backup_config.sh, install.sh, restore.sh
-BACKUP_DIR="${PROJECT_ROOT}/config_backups" # 🛡️  Used to store backup files (before they are overwritten).
+TARGET_DIR="${PROJECT_ROOT}/config"         # 📁 ที่เก็บไฟล์ config สำหรับติดตั้ง (ใช้ใน install.sh)
+SCRIPTS_DIR="${PROJECT_ROOT}/scripts"       # ⚙️  ที่เก็บไฟล์สคริปต์ เช่น backup_config.sh, install.sh, restore.sh
+BACKUP_DIR="${PROJECT_ROOT}/config_backups" # 🛡️  ที่ใช้เก็บไฟล์สำรอง (ก่อนถูกเขียนทับ)
 
 # Create directories if they don't exist
 mkdir -p "${TARGET_DIR}" "${BACKUP_DIR}" "${SCRIPTS_DIR}"

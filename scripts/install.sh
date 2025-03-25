@@ -1,31 +1,22 @@
 #!/bin/bash
 
-set -euo pipefail
+# Use more basic error handling
+set -u
 
-# Error handling function
-error_exit() {
-    local message="$1"
-    echo "❌ Error: $message" >&2
-    exit 1
-}
+# Fix for path resolution
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Success function
-success() {
-    local message="$1"
-    echo "✅ $message"
-}
-
-# Source shared configuration
-SCRIPT_DIR="$(dirname "$(realpath "$0")")"
-source "${SCRIPT_DIR}/../config.sh" || error_exit "Failed to source config.sh"
+# Source config
+source "${SCRIPT_DIR}/config.sh"
 
 # Check if source config directory exists
 if [[ ! -d "$TARGET_DIR" ]]; then
-  error_exit "Config directory not found at $TARGET_DIR"
+  echo "❌ Error: Config directory not found at $TARGET_DIR"
+  exit 1
 fi
 
 # Create timestamped backup directory
-mkdir -p "$TIMED_BACKUP_DIR" || error_exit "Failed to create backup directory: $TIMED_BACKUP_DIR"
+mkdir -p "$TIMED_BACKUP_DIR"
 echo "📁 Backup directory: $TIMED_BACKUP_DIR"
 
 # Initialize counters
@@ -33,44 +24,62 @@ files_installed=0
 files_backed_up=0
 files_missing=0
 
-# Loop and copy each file
+echo "Starting installation process..."
+echo "Files to process: ${#RESTORE_PATHS[@]}"
+
+# Process each file using counter-based loop
 for FILE in "${!RESTORE_PATHS[@]}"; do
   SRC="${TARGET_DIR}/${FILE}.txt"
   DEST="${RESTORE_PATHS[$FILE]}"
+  
+  echo "Processing: ${FILE} -> ${DEST}"
 
+  # Check source file
   if [[ ! -f "$SRC" ]]; then
     echo "⚠️  Warning: Source file missing: $SRC"
-    ((files_missing++))
+    files_missing=$((files_missing + 1))
+    echo "-----------------------------------"
     continue
   fi
 
   # Ensure destination directory exists
-  mkdir -p "$(dirname "$DEST")" || error_exit "Failed to create directory: $(dirname "$DEST")"
+  mkdir -p "$(dirname "$DEST")" 2>/dev/null
+  if [[ $? -ne 0 ]]; then
+    echo "⚠️  Failed to create directory: $(dirname "$DEST")"
+    echo "-----------------------------------"
+    continue
+  fi
 
   # Backup existing destination file if it exists
   if [[ -f "$DEST" ]]; then
-    if cp "$DEST" "$TIMED_BACKUP_DIR/$(basename "$DEST")"; then
+    cp "$DEST" "$TIMED_BACKUP_DIR/$(basename "$DEST")" 2>/dev/null
+    if [[ $? -eq 0 ]]; then
       echo "🔄 Backup of $(basename "$DEST") saved to $TIMED_BACKUP_DIR"
-      ((files_backed_up++))
+      files_backed_up=$((files_backed_up + 1))
     else
-      error_exit "Failed to backup file: $DEST"
+      echo "⚠️  Failed to backup: $DEST (continuing anyway)"
     fi
   fi
 
   # Copy with appropriate permissions
   if [[ "$DEST" == /etc/* ]]; then
     echo "🔧 Installing (sudo): ${FILE}.txt -> $DEST"
-    if ! sudo cp -f "$SRC" "$DEST"; then
-      error_exit "Failed to install file (sudo): $DEST"
-    fi
+    sudo cp -f "$SRC" "$DEST" 2>/dev/null
+    RESULT=$?
   else
     echo "📁 Installing: ${FILE}.txt -> $DEST"
-    if ! cp -f "$SRC" "$DEST"; then
-      error_exit "Failed to install file: $DEST"
-    fi
+    cp -f "$SRC" "$DEST" 2>/dev/null
+    RESULT=$?
   fi
   
-  ((files_installed++))
+  if [[ $RESULT -eq 0 ]]; then
+    echo "✅ Installed: $DEST"
+    files_installed=$((files_installed + 1))
+  else
+    echo "⚠️  Failed to install: $DEST"
+  fi
+  
+  echo "-----------------------------------"
 done
 
 # Summary
@@ -85,7 +94,7 @@ read -p "Re-generate GRUB config now? (y/n): " REPLY
 if [[ "$REPLY" =~ ^[Yy]$ ]]; then
   echo "🔄 Updating GRUB config..."
   if sudo grub-mkconfig -o /boot/grub/grub.cfg; then
-    success "GRUB config updated."
+    echo "✅ GRUB config updated."
   else
     echo "⚠️  GRUB update failed, but other configs were installed successfully."
   fi

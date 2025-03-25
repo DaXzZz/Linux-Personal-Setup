@@ -1,27 +1,18 @@
 #!/bin/bash
 
-set -euo pipefail
+# Use more basic error handling
+set -u
 
-# Error handling function
-error_exit() {
-    local message="$1"
-    echo "❌ Error: $message" >&2
-    exit 1
-}
+# Fix for path resolution
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Success function
-success() {
-    local message="$1"
-    echo "✅ $message"
-}
-
-# Source shared configuration
-SCRIPT_DIR="$(dirname "$(realpath "$0")")"
-source "${SCRIPT_DIR}/../config.sh" || error_exit "Failed to source config.sh"
+# Source config
+source "${SCRIPT_DIR}/config.sh"
 
 # Check if backup directory exists
 if [[ ! -d "$BACKUP_DIR" ]]; then
-  error_exit "Backup directory does not exist: $BACKUP_DIR"
+  echo "❌ Error: Backup directory does not exist: $BACKUP_DIR"
+  exit 1
 fi
 
 # Get available backups
@@ -29,7 +20,8 @@ AVAILABLE_BACKUPS=($(ls -1 "$BACKUP_DIR" 2>/dev/null))
 
 # Check if any backups exist
 if [[ ${#AVAILABLE_BACKUPS[@]} -eq 0 ]]; then
-  error_exit "No backup snapshots found in $BACKUP_DIR"
+  echo "❌ Error: No backup snapshots found in $BACKUP_DIR"
+  exit 1
 fi
 
 # Prompt user to select a backup directory
@@ -51,13 +43,14 @@ AVAILABLE_FILES=0
 
 for FILE in "${!RESTORE_PATHS[@]}"; do
   if [[ -f "$SELECTED_BACKUP/$FILE" ]]; then
-    ((AVAILABLE_FILES++))
+    AVAILABLE_FILES=$((AVAILABLE_FILES + 1))
   fi
 done
 
 # Check if backup is sparse
 if [[ $AVAILABLE_FILES -eq 0 ]]; then
-  error_exit "Selected backup appears to be empty or corrupted"
+  echo "❌ Error: Selected backup appears to be empty or corrupted"
+  exit 1
 elif [[ $AVAILABLE_FILES -lt $TOTAL_FILES ]]; then
   echo "⚠️  Warning: Selected backup contains only $AVAILABLE_FILES of $TOTAL_FILES expected files"
 fi
@@ -74,37 +67,50 @@ files_restored=0
 files_missing=0
 files_failed=0
 
+echo "Starting restore process..."
+echo "Files to process: $TOTAL_FILES"
+
 # Perform restore
 for FILE in "${!RESTORE_PATHS[@]}"; do
   SRC="$SELECTED_BACKUP/$FILE"
   DEST="${RESTORE_PATHS[$FILE]}"
+  
+  echo "Processing: $FILE -> $DEST"
 
   if [[ -f "$SRC" ]]; then
     # Create destination directory if it doesn't exist
-    mkdir -p "$(dirname "$DEST")" || error_exit "Failed to create directory: $(dirname "$DEST")"
+    mkdir -p "$(dirname "$DEST")" 2>/dev/null
+    if [[ $? -ne 0 ]]; then
+      echo "⚠️  Failed to create directory: $(dirname "$DEST")"
+      files_failed=$((files_failed + 1))
+      echo "-----------------------------------"
+      continue
+    fi
 
     # Copy file with appropriate permissions
     if [[ "$DEST" == /etc/* ]]; then
       echo "🔁 Restoring with sudo: $SRC -> $DEST"
-      if sudo cp -f "$SRC" "$DEST"; then
-        ((files_restored++))
-      else
-        echo "⚠️  Failed to restore: $DEST (sudo issue)"
-        ((files_failed++))
-      fi
+      sudo cp -f "$SRC" "$DEST" 2>/dev/null
+      RESULT=$?
     else
       echo "🔁 Restoring: $SRC -> $DEST"
-      if cp -f "$SRC" "$DEST"; then
-        ((files_restored++))
-      else
-        echo "⚠️  Failed to restore: $DEST"
-        ((files_failed++))
-      fi
+      cp -f "$SRC" "$DEST" 2>/dev/null
+      RESULT=$?
+    fi
+    
+    if [[ $RESULT -eq 0 ]]; then
+      echo "✅ Restored: $DEST"
+      files_restored=$((files_restored + 1))
+    else
+      echo "⚠️  Failed to restore: $DEST"
+      files_failed=$((files_failed + 1))
     fi
   else
     echo "⚠️  Missing in backup: $SRC"
-    ((files_missing++))
+    files_missing=$((files_missing + 1))
   fi
+  
+  echo "-----------------------------------"
 done
 
 # Summary
@@ -116,7 +122,7 @@ echo "   - Files failed to restore: $files_failed"
 if [[ $files_failed -gt 0 ]]; then
   echo "⚠️  Some files could not be restored. Check the output above for details."
 else
-  success "Restore complete from snapshot: $SNAPSHOT"
+  echo "✅ Restore complete from snapshot: $SNAPSHOT"
 fi
 
 exit 0
