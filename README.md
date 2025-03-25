@@ -1,38 +1,34 @@
 # Arch Hyprland Config 🚀
 
-Personal setup for Arch Linux with Hyprland, optimized for multi-monitor, visual theming, and terminal productivity.
+Personal Arch Linux + Hyprland configuration optimized for dual monitors and productivity.
 
-## 📦 Included Configs
-- **Hyprland:** Dual monitor layout, workspace defaults, cursor fix
-- **Kitty:** JetBrainsMono font, clean UI
-- **GRUB:** Theme + NVIDIA boot args
-- **ZSH:** Oh-My-Zsh with plugins & fastfetch
-- **Starship:** Cyberpunk-style prompt with Git + clock
-- **SDDM Fix:** Disables secondary screen at login, cursor fix
+## 📦 What's Included
+- **Hyprland**: Multi-monitor setup with workspace defaults
+- **Terminal**: Kitty + ZSH + Starship prompt
+- **System**: GRUB with NVIDIA support + SDDM fixes
 
-## 🖥️ Setup
-- **Main:** DP-1 (landscape 1080p@165Hz)
-- **Secondary:** HDMI-A-1 (vertical 1080p@60Hz)
+## 💻 Monitor Setup
+- Main: DP-1 (1080p@165Hz, landscape)
+- Secondary: HDMI-A-1 (1080p@60Hz, vertical)
 
-## 🛠 Quick Install
+## 🛠️ Quick Setup
+
 ```bash
+# Clone repo
 git clone https://github.com/DaXzZz/Arch-Hyprland-Config.git
 cd Arch-Hyprland-Config
-```
-Copy configs:
-```bash
-cp -r .config/hypr ~/.config/
-cp -r .config/kitty ~/.config/
-cp .zshrc ~/
-cp .config/starship.toml ~/.config/
-sudo cp etc/default/grub /etc/default/grub
-sudo grub-mkconfig -o /boot/grub/grub.cfg
+
+# Install configs using script
+./scripts/install.sh
+
+# Or backup your current configs
+./scripts/backup.sh
 ```
 
-## 💡 Tips
-- `hyprctl reload` to refresh Hyprland
-- Mount issues? See `ntfs_mount_fix_guide.txt`
+## 📝 Other Commands
+- `./scripts/restore.sh` - Restore previous config backups
+- `hyprctl reload` - Apply changes to Hyprland
 
 ---
 
-Make your Hyprland feel like home! ✨
+✨ Make your Hyprland feel like home!
