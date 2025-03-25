@@ -5,43 +5,64 @@
 - sudo pacman -S <package_name>                      # Install a package
 - sudo pacman -Rns <package_name>                    # Remove a package with dependencies
 - sudo pacman -Scc                                   # Clear pacman cache
+- pacman -Ss <keyword>                               # Search for packages
 - pacman -Q | grep <package_name>                    # Check if package is installed
 - pacman -Qi <package>                               # Show detailed info of a package
-- pacman -Ql <package>                               # Show files installed by a package
 - pacman -Qdt                                        # List orphaned packages
 - sudo pacman -Rns $(pacman -Qdtq)                   # Remove orphaned packages
-- sudo paccache -r                                   # Clear old cached packages
 
 - paru -Syu                                          # Update all AUR packages
 - paru -S <package_name>                             # Install a package from AUR
-- paru -Qdt                                          # List AUR orphan packages
+- paru -Ss <keyword>                                 # Search for packages in AUR
 
 # ─────────────────────
 # 📁 FILE OPERATIONS
 # ─────────────────────
+- ls -la                                             # List all files with details
 - du -sh *                                           # Show size of items in current directory
 - df -h                                              # Show disk usage in human-readable form
 - cp -r "source" "destination"                       # Copy files or directories
 - mv "source" "destination"                          # Move or rename files/directories
 - rm -rf "folder/"                                   # Delete folder recursively
+- mkdir -p "path/to/directory"                       # Create directory with parents
 - find . -name "file.txt"                            # Find file by name in current path
 - locate "file.txt"                                  # Locate file (requires updatedb)
-- unzip "file.zip"                                   # Extract zip file
-- unzip "file.zip" -d "destination"                  # Extract to specific folder
+- chmod +x "script.sh"                               # Make a script executable
+- chown user:group "file"                            # Change file owner
 - tar -xvf "file.tar.gz"                             # Extract tar.gz
 - tar -cvf "archive.tar" "folder/"                   # Create tar archive
+- zip -r "archive.zip" "folder/"                     # Create zip archive
+- unzip "file.zip" -d "destination"                  # Extract to specific folder
 
 # ─────────────────────
 # ⚙️ SYSTEMD & SERVICES
 # ─────────────────────
+- systemctl status <service>                         # Check service status
 - systemctl list-units --failed                      # List failed services
-- systemctl list-unit-files --type=service | grep enabled   # Show enabled services
 - sudo systemctl enable <service>                    # Enable a service at startup
 - sudo systemctl disable <service>                   # Disable a service
-- sudo systemctl mask <service>                      # Block service from running entirely
+- sudo systemctl start <service>                     # Start a service
+- sudo systemctl stop <service>                      # Stop a service
+- sudo systemctl restart <service>                   # Restart a service
 - journalctl -xe                                     # View system logs
 - journalctl -b -1                                   # View logs from last boot
-- sudo systemctl reboot --firmware-setup             # Reboot into BIOS/UEFI setup
+- sudo systemctl reboot                              # Reboot system
+- sudo systemctl poweroff                            # Shutdown system
+- sudo systemctl suspend                             # Suspend system
+
+# ─────────────────────
+# 🔄 DUAL-BOOT MANAGEMENT
+# ─────────────────────
+- sudo os-prober                                     # Detect other operating systems
+- sudo grub-mkconfig -o /boot/grub/grub.cfg          # Update GRUB configuration
+- timedatectl                                        # Check system time details
+- sudo timedatectl set-local-rtc 1                   # Fix Windows/Linux time sync issues
+- lsblk -f                                           # List block devices with filesystems
+- sudo mount /dev/sdXY /mnt                          # Mount Windows partition
+- sudo umount /mnt                                   # Unmount partition
+- sudo nano /etc/fstab                               # Edit automount configuration
+- sudo efibootmgr -v                                 # View EFI boot entries
+- sudo hwclock --systohc                             # Update hardware clock from system time
 
 # ─────────────────────
 # 🌐 NETWORKING TOOLS
@@ -50,7 +71,11 @@
 - ping archlinux.org                                 # Test internet connectivity
 - curl -s ifconfig.me                                # Get public IP address
 - nmcli dev wifi list                                # List Wi-Fi networks
+- nmcli dev wifi connect "SSID" password "password"  # Connect to Wi-Fi
+- nmcli con up "connection-name"                     # Connect to a saved network
+- nmcli con down "connection-name"                   # Disconnect from network
 - nmtui                                              # TUI for network management
+- systemctl restart NetworkManager                   # Restart network manager
 
 # ─────────────────────
 # 🔊 AUDIO / PIPEWIRE
@@ -59,18 +84,24 @@
 - pactl set-default-sink <sink_name>                 # Set default audio sink
 - wpctl status                                       # Show PipeWire status
 - wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.5          # Set volume to 50%
+- wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle         # Toggle mute
+- pavucontrol                                        # GUI for audio control
 
 # ─────────────────────
 # 🎧 BLUETOOTH CONTROL
 # ─────────────────────
 - sudo systemctl start bluetooth                     # Start Bluetooth service
-- sudo systemctl stop bluetooth                      # Stop Bluetooth service
 - sudo systemctl enable bluetooth                    # Enable at boot
-- sudo systemctl disable bluetooth                   # Disable auto-start
 - systemctl status bluetooth                         # Check status
-- bluetoothctl scan on                               # Start scanning
-- bluetoothctl connect <device_mac>                  # Connect to a device
-- bluetoothctl disconnect <device_mac>               # Disconnect device
+- bluetoothctl                                       # Enter bluetooth CLI
+- # Inside bluetoothctl:
+- power on                                           # Turn on bluetooth
+- scan on                                            # Start scanning
+- devices                                            # List discovered devices
+- pair XX:XX:XX:XX:XX:XX                             # Pair with device
+- connect XX:XX:XX:XX:XX:XX                          # Connect to device
+- disconnect XX:XX:XX:XX:XX:XX                       # Disconnect device
+- trust XX:XX:XX:XX:XX:XX                            # Trust device for auto-connect
 
 # ─────────────────────
 # 🖥️ HYPRLAND SPECIFIC
@@ -81,146 +112,132 @@
 - hyprctl monitors                                   # List monitor info
 - hyprctl activewindow                               # Show current focused window
 - hyprctl dispatch workspace <N>                     # Switch to workspace N
-- hyprctl dispatch exec workspace 3 "app"            # Launch app in workspace 3
 - hyprctl dispatch togglefloating                    # Toggle floating mode
-- hyprctl dispatch focuswindow last                  # Focus last window
-- hyprctl dispatch togglespecialworkspace 1          # Toggle special workspace
-- nano ~/.config/hypr/monitors.conf                  # Edit monitor layout
-- nano ~/.config/hypr/workspaces.conf                # Configure workspace assignment
+- hyprctl dispatch fullscreen 1                      # Toggle fullscreen
+- hyprctl kill                                       # Kill active window
+- nano ~/.config/hypr/UserConfigs/WindowRules.conf   # Edit window rules
+- nano ~/.config/hypr/UserConfigs/UserSettings.conf  # Edit user settings
 
 # ─────────────────────
-# 🖼️ WAYLAND UTILITIES (grim, slurp, wl-clipboard)
+# 🖼️ WAYLAND UTILITIES
 # ─────────────────────
-- grim -g "$(slurp)" ~/Pictures/snap.png             # Screenshot selected area
+- grim -g "$(slurp)" ~/Pictures/screenshot.png       # Screenshot selected area
+- grim ~/Pictures/screenshot.png                     # Screenshot full desktop
 - wl-copy < file.txt                                 # Copy content to clipboard
 - wl-paste > file.txt                                # Paste from clipboard
+- wl-copy "text"                                     # Copy text to clipboard
+- wl-paste                                           # Output clipboard content
 
 # ─────────────────────
 # 🐚 SHELL & TERMINAL
 # ─────────────────────
 - echo $SHELL                                        # Show current shell
 - chsh -s /bin/zsh                                   # Change default shell to zsh
-- exec bash                                          # Temporarily switch to bash
-- bindkey                                            # List zsh keybindings
+- alias                                              # List all aliases
+- history                                            # Show command history
+- clear                                              # Clear terminal screen
 - which <command>                                    # Show command path
+- man <command>                                      # Show manual page
 - tldr <command>                                     # Show simplified command usage
-- bat <file>                                         # View file with syntax highlight
-- btop                                               # Modern system monitor (install via AUR)
+- cat <file>                                         # View file content
+- less <file>                                        # View file with pagination
+- nano <file>                                        # Edit file with simple editor
+- vim <file>                                         # Edit file with vim
+- btop                                               # Modern system monitor
 
 # ─────────────────────
 # 🧩 KITTY TERMINAL
 # ─────────────────────
 - nano ~/.config/kitty/kitty.conf                    # Edit kitty config
-- grep font ~/.config/kitty/kitty.conf               # Check current font
-- echo "font_family JetBrainsMono Nerd Font" >> ~/.config/kitty/kitty.conf && killall kitty && kitty  # Apply font change
+- kitty +kitten themes                               # Browse and apply themes
+- kitty +kitten icat image.jpg                       # Display image in terminal
+- ctrl+shift+t                                       # New tab (in kitty)
+- ctrl+shift+enter                                   # New window (in kitty)
+- ctrl+shift+r                                       # Reload kitty config
 
 # ─────────────────────
 # 💻 GPU / PERFORMANCE
 # ─────────────────────
 - glxinfo | grep "OpenGL renderer"                   # Check which GPU is in use
 - lspci | grep VGA                                   # List video devices
+- nvidia-smi                                         # NVIDIA GPU stats (if installed)
 - nvtop                                              # Real-time GPU monitor (NVIDIA)
-- powertop                                           # Power usage monitor
-- tlp-stat                                           # Show TLP power status
+- watch -n 1 cat /sys/class/thermal/thermal_zone*/temp # Monitor CPU temperature
+- top                                                # Default process viewer
+- htop                                               # Interactive process viewer
+- free -h                                            # Show memory usage
+- uptime                                             # Show system uptime and load
 
 # ─────────────────────
 # ⚙️ GRUB CONFIGURATION
 # ─────────────────────
 - sudo nano /etc/default/grub                        # Edit GRUB config
 - sudo grub-mkconfig -o /boot/grub/grub.cfg          # Apply GRUB changes
-- ls /boot/grub/fonts/                               # View available fonts
-- sudo grub-mkfont -s 24 -o /boot/grub/fonts/DejaVuSansMono24.pf2 /usr/share/fonts/TTF/DejaVuSansMono.ttf   # Convert font
+- grub-customizer                                    # GUI tool for GRUB (if installed)
+- sudo efibootmgr -v                                 # View EFI boot entries
 - grep GRUB_THEME /etc/default/grub                  # Check current GRUB theme
-- sudo pacman -S ttf-dejavu                          # Install font for GRUB
-- sudo pacman -S terminus-font                       # Install font for terminal/boot
+- sudo pacman -S grub-theme-vimix                    # Install a GRUB theme
 
 # ─────────────────────
-# 🧩 SDDM (Login Manager)
+# 🔐 SYSTEM MAINTENANCE
 # ─────────────────────
-- sudo pacman -S sddm                                # Install SDDM
-- sudo systemctl enable sddm.service                 # Enable at startup
-- sudo systemctl start sddm.service                  # Start SDDM
-- sudo systemctl stop sddm.service                   # Stop SDDM
-- sudo systemctl disable sddm.service                # Disable auto-start
-- sudo systemctl status sddm.service                 # Check SDDM status
-- sudo systemctl mask sddm.service                   # Completely disable SDDM
-- sudo pacman -Rns sddm                              # Uninstall SDDM
-- sudo rm -rf /etc/sddm.conf /etc/sddm.conf.d        # Remove config files
-- sudo rm -rf /usr/share/sddm                        # Remove SDDM shared files
-- rm -rf ~/.config/sddm                              # Remove user config (if exists)
-- ls /usr/share/sddm/themes/                         # List available themes
-- sudo nano /etc/sddm.conf                           # Manually change theme
-- sudo pacman -S sddm-kcm                            # GUI module to set theme (KDE)
-- sudo pacman -S bibata-cursor-theme ttf-dejavu      # Install cursor/font for SDDM
-- paru -S sddm-theme-chili                           # Install AUR theme
-
-# ─────────────────────
-# 🔐 SYSTEM MONITORING & INFO
-# ─────────────────────
-- top                                                # Default process viewer
-- htop                                               # Interactive process viewer
-- btop                                               # Modern alternative to htop
-- free -h                                            # Show memory usage
-- uptime                                             # Show system uptime and load
 - uname -r                                           # Show kernel version
-- neofetch                                           # Show system info
+- hostnamectl                                        # Show system information
+- neofetch                                           # Show system info with graphics
 - inxi -Fazy                                         # Full hardware/system info
-- lsblk -f                                           # Show block devices & filesystems
-- df -h                                              # Show mounted disk usage
-- loginctl session-status                            # Show session info
-- journalctl -p 3 -xb                                # Show system errors from last boot
+- pacman -Qqe > ~/pkglist.txt                        # Backup installed packages list
+- journalctl --disk-usage                            # Check journal size
+- sudo journalctl --vacuum-time=2weeks               # Clear old journal entries
+- sudo fstrim -av                                    # TRIM SSD (good for maintenance)
+- sudo pacman -Syu && paru -Syu                      # Update all packages
 
 # ─────────────────────
-# 📦 BACKUP: TIMESHiFT
+# 🔒 USER & PERMISSIONS
 # ─────────────────────
-- paru -S timeshift                                  # Install from AUR
-- sudo timeshift-launcher                            # Open GUI
-- sudo timeshift --create --comments "Backup" --tags D     # Create backup
+- passwd                                             # Change your password
+- sudo passwd                                        # Change root password
+- sudo -i                                            # Switch to root user
+- groups                                             # Show your groups
+- sudo usermod -aG wheel username                    # Add user to wheel group
+- id                                                 # Display user/group IDs
+- sudo visudo                                        # Edit sudoers file safely
+
+# ─────────────────────
+# 📝 GIT COMMANDS
+# ─────────────────────
+- git clone <repository-url>                         # Clone a repository
+- git status                                         # Check status of repository
+- git add .                                          # Stage all changes
+- git commit -m "message"                            # Commit changes
+- git push                                           # Push to remote repository
+- git pull                                           # Pull latest changes
+- git branch                                         # List branches
+- git checkout -b <branch-name>                      # Create and switch to new branch
+- git config --global credential.helper store        # Store git credentials
+- git config --global --unset credential.helper      # Remove stored git credentials
+
+# ─────────────────────
+# 📦 BACKUP TOOLS
+# ─────────────────────
+- rsync -avz source/ destination/                    # Sync files with rsync
+- timeshift --create --comments "Backup"             # Create system backup
 - sudo timeshift --list                              # List backups
 - sudo timeshift --restore                           # Restore from backup
-- sudo timeshift --delete --snapshot <SNAPSHOT>      # Delete a snapshot
-- sudo timeshift --delete-all                        # Delete all backups
-- sudo -E timeshift-launcher                         # Launch with env vars
+- sudo dd if=/dev/sda of=/path/to/backup.img         # Create disk image backup
+- sudo dd if=/path/to/backup.img of=/dev/sda         # Restore disk image
 
 # ─────────────────────
-# 🧪 BETTERDISCORD FIXES
+# 🔗 USEFUL SHORTCUTS
 # ─────────────────────
-- rm -rf ~/.config/BetterDiscord/plugins/*           # Delete all plugins
-- rm -rf ~/.config/BetterDiscord                     # Full reset
-- betterdiscord-installer reinstall                  # Reinstall
-- betterdiscord-installer upgrade                    # Update
-- killall Discord && discord                         # Restart Discord
-- sudo pacman -Rns betterdiscord-installer           # Uninstall BetterDiscord
-- wget <url> -O ~/.config/BetterDiscord/plugins/OPluginLibrary.plugin.js  # Fix missing plugin
-- reboot                                             # Restart after changes
-
-# ─────────────────────
-# 📝 SHELL ALIASES & CUSTOM SHORTCUTS
-# ─────────────────────
-- alias update="sudo pacman -Syu"                    # Temporary alias
-- alias                                              # List all aliases
-- unalias update                                     # Remove alias
-
-# ➤ Add permanent alias (ZSH)
-echo "alias useful='cat ~/useful-cmd/cmd-list.txt'" >> ~/.zshrc
-source ~/.zshrc
-
-# ➤ Add permanent alias (Bash)
-echo "alias cls='clear'" >> ~/.bashrc
-source ~/.bashrc
-
-# ➤ Recommended alias structure
-mkdir -p ~/.config/zsh
-echo "alias gs='git status'" >> ~/.config/zsh/aliases.zsh
-echo 'source ~/.config/zsh/aliases.zsh' >> ~/.zshrc
-source ~/.zshrc
-
-# ─────────────────────
-# 📝 GIT command
-# ─────────────────────
-- git config --global credential.helper store  # This tells Git to save credentials to a plain text file after first successful login.
-- ~/.git-credentials # Git will store this token in this directories
-
-# ➤ Optional: Check or remove stored config
-View : git config --global --get credential.helper
-Remove : git config --global --unset credential.helper
+# Bash/Zsh Shortcuts
+- Ctrl+C                                             # Interrupt/cancel current command
+- Ctrl+Z                                             # Suspend process
+- Ctrl+D                                             # Exit current shell
+- Ctrl+L                                             # Clear screen
+- Ctrl+R                                             # Search command history
+- Ctrl+A                                             # Move cursor to beginning of line
+- Ctrl+E                                             # Move cursor to end of line
+- Alt+B                                              # Move back one word
+- Alt+F                                              # Move forward one word
+- Tab                                                # Auto-complete
+- Up/Down arrows                                     # Navigate command history
