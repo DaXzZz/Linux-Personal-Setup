@@ -1,0 +1,47 @@
+Fix NTFS Mount Error (Windows Hibernation or Corruption)
+========================================================
+
+❌ Common Error:
+- Failed to mount NTFS volume
+- Message: "Windows is hibernated, refused to mount" or "bad superblock"
+
+✅ Step-by-Step Fix:
+
+🔍 1. Check the filesystem type:
+
+   sudo blkid /dev/nvme0n1p3
+
+   -> Shows if it's ntfs, ext4, etc.
+
+🧰 2. Install tools (for NTFS):
+
+   sudo pacman -S ntfs-3g
+
+🛠 3. Run filesystem check:
+
+   - For NTFS:
+     sudo ntfsfix /dev/nvme0n1p3
+
+   - For ext4:
+     sudo fsck /dev/nvme0n1p3
+
+⚡ 4. If the issue is "Windows is hibernated":
+
+   (Recommended method from Windows)
+
+   - Boot into Windows
+   - Open Command Prompt as Administrator:
+     powercfg /h off
+     shutdown /s /f /t 0
+
+   -> This disables Fast Startup and fully shuts down Windows.
+
+🚀 5. Mount manually:
+
+   sudo mkdir -p /mnt/ntfsdrive
+   sudo mount -t ntfs-3g /dev/nvme0n1p3 /mnt/ntfsdrive
+
+📌 Notes:
+- You can name /mnt/ntfsdrive anything you want
+- GUI file managers may auto-mount to /run/media/<user>/...
+- For auto-mount at boot, add an entry to /etc/fstab
