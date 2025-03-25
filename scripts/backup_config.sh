@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define target directory
-TARGET_DIR="/home/ryu/Arch_Hyprland_Config/config"
+TARGET_DIR="/home/ryu/Arch-Hyprland-Config/config"
 
 # Create the target directory if it doesn't exist
 mkdir -p "$TARGET_DIR"
@@ -17,11 +17,18 @@ FILES=(
     "$HOME/.config/hypr/UserConfigs/UserSettings.conf"
 )
 
-# Copy each file
+# Copy each file as plain .txt
 for FILE in "${FILES[@]}"; do
     if [ -f "$FILE" ]; then
-        cp -f "$FILE" "$TARGET_DIR"
-        echo "Copied: $FILE"
+        BASENAME=$(basename "$FILE")
+        # Check if the file starts with a dot
+        if [[ "$BASENAME" == .* ]]; then
+            NEW_NAME=${BASENAME#.}.txt  # Remove the leading dot and add .txt
+        else
+            NEW_NAME=$BASENAME.txt
+        fi
+        cp -f "$FILE" "$TARGET_DIR/$NEW_NAME"
+        echo "Copied: $FILE as $NEW_NAME"
     else
         echo "Skipped (not found): $FILE"
     fi
