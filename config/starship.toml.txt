@@ -30,12 +30,19 @@ truncate_to_repo = true
 # 🌿 GIT BRANCH
 [git_branch]
 style = "bg:#bd93f9 fg:#282a36"
-format = '[  $branch ]($style)'
+format = '[  $branch$git_status ]($style)'
 
-# 🔄 GIT STATUS
+# 🔄 GIT STATUS 
 [git_status]
 style = "bg:#bd93f9 fg:#282a36"
-format = '([$all_status$ahead_behind ]($style))'
+format = '([$all_status$ahead_behind]($style))'
+conflicted = "C"  # Conflict
+staged = "+"      # Staged
+modified = "*"    # Modified
+deleted = "-"     # Deleted
+renamed = "R"     # Renamed
+untracked = "?"   # Untracked
+stashed = "S"     # Stashed
 
 # ⌛ CMD DURATION
 [cmd_duration]

@@ -188,8 +188,9 @@ echo -e "\n📁 All configs backed up to: $TARGET_DIR"
 # Offer to list backed up files
 read -p "Do you want to see a list of all backed up files? (y/n): " SHOW_LIST
 if [[ "$SHOW_LIST" =~ ^[Yy]$ ]]; then
-    echo -e "\nBacked up files:"
+    echo -e "\nBacked up files (size in KB):"
     ls -la "$TARGET_DIR"
+    echo -e "\nNote: The 'total XX' at the top shows disk usage in kilobytes (KB)"
 fi
 
 echo -e "\n✅ Backup complete!"
