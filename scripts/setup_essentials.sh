@@ -188,9 +188,6 @@ echo "The following components were processed:"
 echo " - Paru (AUR helper)"
 echo " - Starship prompt"
 echo " - Essential fonts"
-if prompt_yes_no "Show installation log?"; then
-    less "$LOG_FILE"
-fi
 echo "Log file saved to: $LOG_FILE"
 
 exit 0
