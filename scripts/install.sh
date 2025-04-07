@@ -43,8 +43,6 @@ select folder in "${CONFIG_SUBFOLDERS[@]}"; do
                     RAW_BACKUP_PATH="$BACKUP_DIR/$backup"
                     TEMP_INSTALL_FOLDER="${PROJECT_ROOT}/_temp_install"
                     mkdir -p "$TEMP_INSTALL_FOLDER"
-
-                    # Clear previous temp folder
                     rm -f "$TEMP_INSTALL_FOLDER"/*
 
                     echo "⏳ Converting raw backup files to .txt format..."
@@ -53,6 +51,7 @@ select folder in "${CONFIG_SUBFOLDERS[@]}"; do
                         DEST="$TEMP_INSTALL_FOLDER/${FILE}.txt"
                         [[ -f "$SRC" ]] && cp "$SRC" "$DEST"
                     done
+
                     INSTALL_SOURCE_FOLDER="$TEMP_INSTALL_FOLDER"
                     break 2
                 else
@@ -66,12 +65,20 @@ select folder in "${CONFIG_SUBFOLDERS[@]}"; do
     esac
 done
 
-# Validate folder
-if [[ ! -d "$INSTALL_SOURCE_FOLDER" ]]; then
-    echo "❌ Error: Folder '$INSTALL_SOURCE_FOLDER' does not exist."
-    exit 1
-fi
+# Confirm selected folder
 echo "📂 Using folder: $INSTALL_SOURCE_FOLDER"
+
+# Ask for installation mode
+echo -e "\nSelect installation mode:"
+echo "1) Complete - Install all available configurations"
+echo "2) Selective - Choose which configurations to install"
+read -p "Enter your choice (1 or 2): " INSTALL_MODE
+
+case "$INSTALL_MODE" in
+    1) INSTALL_TYPE="complete"; echo "Selected: Complete installation" ;;
+    2) INSTALL_TYPE="selective"; echo "Selected: Selective installation" ;;
+    *) echo "Invalid selection. Defaulting to complete installation."; INSTALL_TYPE="complete" ;;
+esac
 
 # Count available configuration files
 AVAILABLE_CONFIGS=0
@@ -90,18 +97,6 @@ if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
     echo "Installation cancelled."
     exit 0
 fi
-
-# Install mode
-echo -e "\nSelect installation mode:"
-echo "1) Complete - Install all available configurations"
-echo "2) Selective - Choose which configurations to install"
-read -p "Enter your choice (1 or 2): " INSTALL_MODE
-
-case "$INSTALL_MODE" in
-    1) INSTALL_TYPE="complete"; echo "Selected: Complete installation" ;;
-    2) INSTALL_TYPE="selective"; echo "Selected: Selective installation" ;;
-    *) echo "Invalid selection. Defaulting to complete installation."; INSTALL_TYPE="complete" ;;
-esac
 
 # Prepare backup dir
 mkdir -p "$TIMED_BACKUP_DIR"
