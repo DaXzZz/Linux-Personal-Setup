@@ -49,6 +49,28 @@ case "$BACKUP_MODE" in
     *) echo "Invalid selection. Defaulting to complete backup."; BACKUP_TYPE="complete" ;;
 esac
 
+# Choose target subfolder inside config/
+echo -e "\nSelect a folder to save this backup:"
+CONFIG_SUBFOLDERS=("PC" "Notebook" "Create new folder")
+PS3="choose > "
+select folder in "${CONFIG_SUBFOLDERS[@]}"; do
+    if [[ "$folder" == "Create new folder" ]]; then
+        read -p "Enter a name for the new folder: " NEW_FOLDER_NAME
+        BACKUP_FOLDER="$TARGET_DIR/$NEW_FOLDER_NAME"
+        break
+    elif [[ -n "$folder" ]]; then
+        BACKUP_FOLDER="$TARGET_DIR/$folder"
+        break
+    else
+        echo "Invalid choice. Try again."
+    fi
+done
+
+# Create the folder if it doesn't exist
+mkdir -p "$BACKUP_FOLDER"
+echo "✅ Using backup folder: $BACKUP_FOLDER"
+
+
 # Create target directory
 mkdir -p "$TARGET_DIR"
 
@@ -80,7 +102,7 @@ for ((i=0; i<${#FILES_TO_MANAGE[@]}; i++)); do
     FILE="${FILES_TO_MANAGE[$i]}"
     BASENAME=$(basename "$FILE")
     NEW_NAME=${BASENAME#.}.txt
-    DEST_FILE="$TARGET_DIR/$NEW_NAME"
+    DEST_FILE="$BACKUP_FOLDER/$NEW_NAME"
     
     # In selective mode, ask if user wants to back up this file
     if [[ "$BACKUP_TYPE" == "selective" ]]; then
@@ -183,13 +205,13 @@ if [[ "$BACKUP_TYPE" == "update" ]]; then
 fi
 echo "   - Files skipped: $files_skipped"
 echo "   - Files not found: $files_not_found"
-echo -e "\n📁 All configs backed up to: $TARGET_DIR"
+echo -e "\n📁 All configs backed up to: $BACKUP_FOLDER"
 
 # Offer to list backed up files
 read -p "Do you want to see a list of all backed up files? (y/n): " SHOW_LIST
 if [[ "$SHOW_LIST" =~ ^[Yy]$ ]]; then
     echo -e "\nBacked up files (size in KB):"
-    ls -la "$TARGET_DIR"
+    ls -la "$BACKUP_FOLDER"
     echo -e "\nNote: The 'total XX' at the top shows disk usage in kilobytes (KB)"
 fi
 

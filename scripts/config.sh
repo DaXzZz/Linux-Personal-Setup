@@ -102,8 +102,9 @@ for dir in "${TARGET_DIR}" "${BACKUP_DIR}" "${SCRIPTS_DIR}"; do
 done
 
 # Timestamped backup directory
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-TIMED_BACKUP_DIR="${BACKUP_DIR}/original_${TIMESTAMP}"
+HOSTNAME=$(hostname | cut -d'.' -f1)
+TIMESTAMP=$(date +"%d-%b-%Y_%I.%M%p")  # e.g., 07-Apr-2025_09.30AM
+TIMED_BACKUP_DIR="${BACKUP_DIR}/${HOSTNAME}_${TIMESTAMP}"
 
 # List of system files to manage (full paths)
 FILES_TO_MANAGE=(

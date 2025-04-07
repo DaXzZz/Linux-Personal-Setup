@@ -29,6 +29,15 @@ echo "to their proper locations on your system. Your current files will be backe
 echo "automatically before being replaced."
 echo "=============================================================="
 
+# Recommend running setup_essentials.sh first
+echo -e "\n⚠️  RECOMMENDED: Run 'setup_essentials.sh' before continuing."
+echo "   This will ensure all required packages and dependencies are installed."
+read -p "Have you already run setup_essentials.sh on this system? (y/n): " confirm_essentials
+if [[ ! "$confirm_essentials" =~ ^[Yy]$ ]]; then
+    echo "🛑 Please run setup_essentials.sh first, then rerun this script."
+    exit 1
+fi
+
 # Check if source config directory exists
 if [[ ! -d "$TARGET_DIR" ]]; then
   echo "❌ Error: Config directory not found at $TARGET_DIR"
@@ -36,17 +45,41 @@ if [[ ! -d "$TARGET_DIR" ]]; then
   exit 1
 fi
 
+# Select the subfolder to install from
+echo -e "\nSelect the backup folder to install from:"
+CONFIG_SUBFOLDERS=("PC" "Notebook" "Other (type manually)")
+PS3="choose > "
+select folder in "${CONFIG_SUBFOLDERS[@]}"; do
+    if [[ "$folder" == "Other (type manually)" ]]; then
+        read -p "Enter folder name under config/: " MANUAL_FOLDER
+        INSTALL_SOURCE_FOLDER="$TARGET_DIR/$MANUAL_FOLDER"
+        break
+    elif [[ -n "$folder" ]]; then
+        INSTALL_SOURCE_FOLDER="$TARGET_DIR/$folder"
+        break
+    else
+        echo "Invalid choice. Try again."
+    fi
+done
+
+# Validate selected folder
+if [[ ! -d "$INSTALL_SOURCE_FOLDER" ]]; then
+    echo "❌ Error: Folder '$INSTALL_SOURCE_FOLDER' does not exist."
+    exit 1
+fi
+echo "📂 Using folder: $INSTALL_SOURCE_FOLDER"
+
 # Count available configuration files
 AVAILABLE_CONFIGS=0
 for FILE in "${!RESTORE_PATHS[@]}"; do
-  SRC="${TARGET_DIR}/${FILE}.txt"
+  SRC="${INSTALL_SOURCE_FOLDER}/${FILE}.txt"
   if [[ -f "$SRC" ]]; then
     AVAILABLE_CONFIGS=$((AVAILABLE_CONFIGS + 1))
   fi
 done
 
 if [[ $AVAILABLE_CONFIGS -eq 0 ]]; then
-  echo "❌ Error: No configuration files found in $TARGET_DIR"
+  echo "❌ Error: No configuration files found in $INSTALL_SOURCE_FOLDER"
   echo "Please run backup.sh first to create configuration files."
   exit 1
 fi
@@ -57,6 +90,7 @@ if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
     echo "Installation cancelled."
     exit 0
 fi
+
 
 # Setup installation mode
 echo -e "\nSelect installation mode:"
@@ -86,7 +120,7 @@ echo "-----------------------------------"
 
 # Process each file
 for FILE in "${!RESTORE_PATHS[@]}"; do
-  SRC="${TARGET_DIR}/${FILE}.txt"
+  SRC="${INSTALL_SOURCE_FOLDER}/${FILE}.txt"
   DEST="${RESTORE_PATHS[$FILE]}"
   
   # Skip if source doesn't exist
@@ -156,11 +190,11 @@ echo "   - Files installed: $files_installed"
 echo "   - Files backed up: $files_backed_up"
 echo "   - Files skipped: $files_skipped"
 echo "   - Files missing: $files_missing"
-echo -e "\n💾 All configurations installed from: $TARGET_DIR"
+echo -e "\n💾 All configurations installed from: $INSTALL_SOURCE_FOLDER"
 echo "🛡️  Backups saved to: $TIMED_BACKUP_DIR"
 
 # Optional: regenerate GRUB config
-if [[ -f "/etc/default/grub" && -f "${TARGET_DIR}/grub.txt" ]]; then
+if [[ -f "/etc/default/grub" && -f "${INSTALL_SOURCE_FOLDER}/grub.txt" ]]; then
   echo -e "\nGRUB configuration was updated."
   read -p "Do you want to regenerate GRUB config now? (y/n): " REPLY
   if [[ "$REPLY" =~ ^[Yy]$ ]]; then
