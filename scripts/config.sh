@@ -102,7 +102,7 @@ for dir in "${TARGET_DIR}" "${BACKUP_DIR}" "${SCRIPTS_DIR}"; do
 done
 
 # Timestamped backup directory
-HOSTNAME=$(hostname | cut -d'.' -f1)
+HOSTNAME=$(command -v hostname >/dev/null && hostname | cut -d'.' -f1 || echo "unknownhost")
 TIMESTAMP=$(date +"%d-%b-%Y_%I.%M%p")  # e.g., 07-Apr-2025_09.30AM
 TIMED_BACKUP_DIR="${BACKUP_DIR}/${HOSTNAME}_${TIMESTAMP}"
 
