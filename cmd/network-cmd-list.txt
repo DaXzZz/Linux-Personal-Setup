@@ -1,6 +1,6 @@
-# ────────────────────────────────
+# ─────────────────────
 # 🌐 NETWORKING (Linux vs Windows)
-# ────────────────────────────────
+# ─────────────────────
 
 # 📡 Show Network Interfaces and IPs
 - ip a                                                # Show all network interfaces (like `ipconfig`)
@@ -11,7 +11,7 @@
 # 📍 IP Address Management
 - sudo dhclient                                       # Renew DHCP lease (like `ipconfig /renew`)
 - sudo dhclient -r                                    # Release DHCP lease (like `ipconfig /release`)
-- ip addr flush dev wlan0                             # Clear current IP on wlan0 (reset interface)
+- ip addr flush dev wlan0                             # Clear/reset IP address on wlan0
 
 # 📶 Wi-Fi & Ethernet Management
 - nmcli device status                                 # Show interface names and connection status
@@ -19,25 +19,35 @@
 - nmcli device wifi list                              # Scan for nearby Wi-Fi networks
 - nmtui                                               # Text GUI to connect/change Wi-Fi or Ethernet
 
-# 🔧 Set Static IP (CLI)
-- nmcli connection modify "Wired connection 1" ipv4.addresses 192.168.1.100/24    # Set static IP
-- nmcli connection modify "Wired connection 1" ipv4.gateway 192.168.1.1           # Set gateway
-- nmcli connection modify "Wired connection 1" ipv4.dns 8.8.8.8                   # Set DNS
-- nmcli connection modify "Wired connection 1" ipv4.method manual                 # Switch to static
-- nmcli connection up "Wired connection 1"                                        # Apply changes
+# 🔧 Set Static IP (wlan0 or eth0)
+- nmcli connection show                               # Find your connection name (e.g. "Ryu")
+- nmcli connection modify "Ryu" ipv4.addresses 192.168.1.100/24        # Set static IP
+- nmcli connection modify "Ryu" ipv4.gateway 192.168.1.1               # Set gateway (e.g. switch/router)
+- nmcli connection modify "Ryu" ipv4.dns 8.8.8.8                       # Set DNS
+- nmcli connection modify "Ryu" ipv4.method manual                    # Enable manual (static) config
+- nmcli connection down "Ryu" && nmcli connection up "Ryu"            # Restart to apply
+
+# 🔁 Switch Back to DHCP
+- nmcli connection modify "Ryu" ipv4.method auto                      # Switch back to DHCP
+- nmcli connection down "Ryu" && nmcli connection up "Ryu"            # Restart connection
 
 # 🔁 Restart or Reload Network
-- sudo systemctl restart NetworkManager                                           # Restart network service
-- nmcli networking off && nmcli networking on                                     # Soft reset network
+- sudo systemctl restart NetworkManager                               # Restart network service
+- nmcli networking off && nmcli networking on                         # Soft reset network stack
 
 # 📤 Test Network Connection
-- ping 8.8.8.8                                                                    # Ping Google DNS
-- ping archlinux.org                                                              # Ping website
-- traceroute archlinux.org                                                        # Trace route to target
-- curl ifconfig.me                                                                # Show your public IP address
-- dig archlinux.org                                                               # DNS info (like `nslookup`)
-- nslookup archlinux.org                                                          # Also available with `bind`
+- ping 8.8.8.8                                                        # Ping Google DNS
+- ping archlinux.org                                                  # Ping website
+- traceroute archlinux.org                                            # Trace route to target (needs `traceroute`)
+- curl ifconfig.me                                                    # Show your public IP address
+- dig archlinux.org                                                   # DNS info (like `nslookup`, needs `bind`)
+- nslookup archlinux.org                                              # Also available with `bind`
+
+# 🔒 Firewall (Optional)
+- sudo ufw status                                                     # Check if firewall is active (if using UFW)
+- sudo ufw enable                                                     # Enable basic firewall
+- sudo ufw allow 22/tcp                                               # Allow SSH (example rule)
 
 # 🌐 GUI Tools
-- nm-connection-editor                                                            # Edit connections with GUI
-- nm-applet                                                                       # Start tray icon (if using Waybar)
+- nm-connection-editor                                                # Edit network profiles (static IP, DNS, etc.)
+- nm-applet                                                           # Start GTK tray icon (requires Waybar tray)
