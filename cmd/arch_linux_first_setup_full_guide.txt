@@ -1,0 +1,184 @@
+============================
+🛠️ Arch Linux First Setup Guide
+============================
+
+📦 รวมแพ็กเกจที่แนะนำสำหรับเครื่องใหม่ พร้อมคำสั่งติดตั้ง และการตั้งค่าพื้นฐาน
+
+----------------------------
+🧱 1. ติดตั้งแพ็กเกจทั้งหมด
+----------------------------
+Run:
+    paru -S p7zip unrar tar rsync git neofetch htop exfatprogs fuse-exfat ntfs-3g flac jasper aria2 curl wget timeshift btop zoxide firefox libreoffice-fresh vlc gimp kdenlive qt6-multimedia-ffmpeg krita thunderbird trash-cli iputils inetutils intel-ucode pamac-gtk obs-studio discord telegram-desktop postman-bin docker visual-studio-code-bin github-cli docker-compose bat preload ufw gufw archlinux-tweak-tool-git
+
+📌 Note:
+- qt6-multimedia-ffmpeg → กดเบอร์ 1 ตอนถาม
+- timeshift ใช้ CLI หรือใช้เวอร์ชัน GUI จาก AUR (`timeshift-gtk`)
+- preload, pamac-gtk, gufw อยู่ใน AUR (ใช้ paru เท่านั้น)
+
+✅ วิธีเช็กว่าติดตั้งแล้วหรือยัง:
+    which <ชื่อโปรแกรม>
+
+ตัวอย่าง:
+    which preload      # เช็กว่า preload ติดตั้งแล้วหรือยัง
+    which bat          # เช็กว่า bat ติดตั้งแล้วหรือยัง
+
+ถ้าโปรแกรมติดตั้งแล้วจะโชว์ path เช่น /usr/bin/preload  
+ถ้าไม่เจอจะแสดงว่า not found → ยังไม่ได้ติดตั้ง
+
+----------------------------
+⚙️ 2. ตั้งค่า Shell ให้รองรับ `zoxide`
+----------------------------
+เช็กว่าใช้ shell อะไร:
+    echo $SHELL
+
+ถ้าใช้ bash:
+    echo 'eval "$(zoxide init bash)"' >> ~/.bashrc
+    source ~/.bashrc
+
+ถ้าใช้ zsh:
+    echo 'eval "$(zoxide init zsh)"' >> ~/.zshrc
+    source ~/.zshrc
+
+----------------------------
+🐳 3. ตั้งค่า Docker
+----------------------------
+เปิดบริการ Docker:
+    sudo systemctl enable --now docker
+
+ให้ user ปัจจุบันใช้ docker ได้โดยไม่ต้อง sudo:
+    sudo usermod -aG docker $USER
+    reboot
+
+----------------------------
+📦 4. อัปเดต grub (สำคัญถ้าใช้ intel-ucode)
+----------------------------
+    sudo grub-mkconfig -o /boot/grub/grub.cfg
+
+----------------------------
+🛡️ 5. ตั้งค่า Firewall ด้วย UFW
+----------------------------
+เปิดบริการ UFW:
+    sudo systemctl enable --now ufw
+
+ตั้งค่าพื้นฐาน:
+    sudo ufw default deny incoming
+    sudo ufw default allow outgoing
+
+เปิดใช้งาน firewall:
+    sudo ufw enable
+
+ตัวอย่างคำสั่ง:
+- อนุญาต SSH:        sudo ufw allow ssh
+- อนุญาตพอร์ต:      sudo ufw allow 8080
+- ปิดการใช้งาน:      sudo ufw disable
+- ตรวจสอบสถานะ:     sudo ufw status
+
+📌 GUI firewall:
+- เปิด GUI:           gufw
+
+----------------------------
+📘 6. วิธีใช้งานเบื้องต้น
+----------------------------
+
+[📦 โปรแกรมพื้นฐาน]
+- โชว์สเปคเครื่อง:              neofetch
+- ดู CPU/RAM แบบ UI:           btop
+- ลบไฟล์แบบปลอดภัย:          trash-put <ไฟล์>
+- คืนไฟล์จากถังขยะ:           trash-restore
+- แสดงไฟล์แบบมีสี:            bat <ไฟล์>
+- ดาวน์โหลดแรง ๆ:             aria2c http://url
+
+[🧠 zoxide]
+- cd แบบฉลาด:                 z <ชื่อโฟลเดอร์ที่เคยเข้า>
+- ดู history:                   zoxide query -l
+
+[🐙 GitHub CLI]
+- login:                       gh auth login
+- โคลน repo:                  gh repo clone user/repo
+- สร้าง repo ใหม่:             gh repo create
+
+[🛡️ timeshift]
+- สร้าง snapshot:             sudo timeshift --create --comments "before update" --tags D
+- ดู snapshot:                sudo timeshift --list
+- คืนค่า snapshot:            sudo timeshift --restore
+
+[🐳 docker-compose]
+- รัน container:               docker-compose up
+- ปิด container:              docker-compose down
+
+[🎥 OBS Studio]
+- เปิด OBS:                   obs
+
+[💬 โปรแกรม GUI]
+- เปิด Discord:               discord
+- เปิด Telegram:             telegram-desktop
+- เปิด Postman:              postman
+
+[🛍 pamac-gtk]
+- เปิด App Store:             pamac-manager
+
+[🧰 trash-cli เพิ่มเติม]
+- ล้างถังขยะ:                trash-empty
+- ดูไฟล์ที่ถูกลบ:             trash-list
+
+[📖 bat (แทน cat)]
+- ดูไฟล์มีไฮไลต์:             bat file.txt
+- ไม่มี paging:               bat --paging=never file.txt
+- แบบ clean:                 bat -p file.txt
+
+📝 แนะนำตั้ง alias:
+    echo 'alias cat="bat --paging=never"' >> ~/.bashrc
+    source ~/.bashrc
+
+[🌐 เครือข่าย (iputils/inetutils)]
+- ping:                       ping google.com
+- ดู IP:                      ip a
+- traceroute:                traceroute google.com
+- hostname:                  hostname
+- public IP:                 curl ifconfig.me
+
+----------------------------
+⚡ 7. เปิดบริการ preload เพื่อเร่งโหลดแอป
+----------------------------
+เปิด preload:
+    sudo systemctl enable --now preload
+
+📌 preload จะเรียนรู้แอปที่ใช้บ่อย แล้วโหลดไว้ล่วงหน้าในแรมแบบอัตโนมัติ
+ไม่ต้องตั้งค่าเพิ่ม ใช้งานได้ทันที
+
+----------------------------
+🚪 8. ปิด GDM และเปิด SDDM (ถ้าเปลี่ยน Desktop Manager)
+----------------------------
+1. ปิด GDM:
+    sudo systemctl disable --now gdm
+
+2. เปิด SDDM:
+    sudo systemctl enable --now sddm
+
+📌 จากนั้น reboot แล้ว SDDM จะทำงานแทน GDM โดยอัตโนมัติ
+
+----------------------------
+🔧 9. Git First Setup (แนะนำตั้งค่าหลังติดตั้ง)
+----------------------------
+
+✅ ตั้งชื่อและอีเมล (ใช้กับทุก commit):
+    git config --global user.name "Your Name"
+    git config --global user.email "you@example.com"
+
+✅ เปิด color output:
+    git config --global color.ui auto
+
+✅ ตั้ง default branch เป็น main:
+    git config --global init.defaultBranch main
+
+✅ ตั้งโปรแกรมแก้ไขข้อความ (เช่น nano, nvim):
+    git config --global core.editor nano
+
+✅ เช็กค่าทั้งหมดที่ตั้งไว้:
+    git config --list
+
+✅ (เลือก) สร้าง SSH key และเชื่อมกับ GitHub:
+    ssh-keygen -t ed25519 -C "you@example.com"
+    cat ~/.ssh/id_ed25519.pub
+
+📌 copy key ไปเพิ่มใน GitHub > Settings > SSH and GPG Keys
