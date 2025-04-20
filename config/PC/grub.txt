@@ -1,10 +1,9 @@
 # GRUB boot loader configuration
 
-GRUB_DEFAULT=0
+GRUB_DEFAULT=2
 GRUB_TIMEOUT=30
 GRUB_DISTRIBUTOR="Arch"
 GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet nvidia-drm.modeset=1 nvidia_drm.fbdev=1"
-
 GRUB_CMDLINE_LINUX="zswap.enabled=0 rootfstype=ext4"
 
 # Preload both GPT and MBR modules so that they are not missed
@@ -62,6 +61,3 @@ GRUB_THEME="/usr/share/grub/themes/vimix/theme.txt"
 # functionality install os-prober and uncomment to detect and include other
 # operating systems.
 GRUB_DISABLE_OS_PROBER=false
-
-#GRUB FONT
-GRUB_FONT=/boot/grub/fonts/DejaVuSansMono24.pf2
