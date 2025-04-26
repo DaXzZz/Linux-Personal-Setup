@@ -86,9 +86,9 @@ prompt_yes_no "Install core desktop apps & tools?" && {
 
     # Packages via pacman
     sudo pacman -S \
-        p7zip unrar tar rsync git neofetch htop exfatprogs fuse-exfat ntfs-3g flac jasper aria2 curl wget \
-        timeshift btop zoxide firefox vlc gimp qt6-multimedia-ffmpeg krita thunderbird trash-cli iputils \
-        inetutils intel-ucode obs-studio python python-pip nodejs npm bat preload ufw gufw
+        p7zip unrar tar rsync git neofetch htop nano exfatprogs fuse-exfat ntfs-3g flac jasper aria2 curl wget \
+        cmake clang imagemagick go timeshift btop zoxide firefox vlc gimp qt6-multimedia-ffmpeg krita thunderbird \
+        trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat preload ufw gufw
 
     # Packages via paru
     paru -S \
