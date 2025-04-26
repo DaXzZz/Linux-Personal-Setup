@@ -7,13 +7,16 @@
 ----------------------------
 🧱 1. ติดตั้งแพ็กเกจทั้งหมด
 ----------------------------
-Run:
-    paru -S p7zip unrar tar rsync git neofetch htop exfatprogs fuse-exfat ntfs-3g flac jasper aria2 curl wget timeshift btop zoxide firefox libreoffice-fresh vlc gimp kdenlive qt6-multimedia-ffmpeg krita thunderbird trash-cli iputils inetutils intel-ucode pamac-gtk obs-studio discord telegram-desktop postman-bin docker visual-studio-code-bin github-cli docker-compose bat preload ufw gufw archlinux-tweak-tool-git
+ติดตั้งจาก pacman (Official Repo):
+sudo pacman -S p7zip unrar tar rsync git neofetch htop exfatprogs fuse-exfat ntfs-3g flac jasper aria2 curl wget timeshift btop zoxide firefox vlc gimp qt6-multimedia-ffmpeg krita thunderbird trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat preload ufw gufw
 
-📌 Note:
-- qt6-multimedia-ffmpeg → กดเบอร์ 1 ตอนถาม
-- timeshift ใช้ CLI หรือใช้เวอร์ชัน GUI จาก AUR (`timeshift-gtk`)
-- preload, pamac-gtk, gufw อยู่ใน AUR (ใช้ paru เท่านั้น)
+ติดตั้งจาก paru (AUR):
+paru -S libreoffice-fresh pamac-gtk discord telegram-desktop postman-bin docker visual-studio-code-bin github-cli docker-compose archlinux-tweak-tool-git
+
+Note:
+- qt6-multimedia-ffmpeg → กดเบอร์ 1 ตอนถาม (ถ้ามีตัวเลือก)
+- timeshift ใช้ CLI หรือ GUI ผ่าน AUR (timeshift-gtk)
+- preload, pamac-gtk, gufw, postman-bin ใช้ paru เท่านั้น
 
 ✅ วิธีเช็กว่าติดตั้งแล้วหรือยัง:
     which <ชื่อโปรแกรม>
