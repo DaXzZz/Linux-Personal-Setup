@@ -8,10 +8,10 @@
 🧱 1. ติดตั้งแพ็กเกจทั้งหมด
 ----------------------------
 ติดตั้งจาก pacman (Official Repo):
-sudo pacman -S p7zip unrar tar rsync git neofetch htop nano exfatprogs fuse-exfat ntfs-3g flac jasper aria2 curl wget cmake clang imagemagick go timeshift btop zoxide firefox vlc gimp qt6-multimedia-ffmpeg krita thunderbird trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat preload ufw gufw
+- sudo pacman -S p7zip unrar tar rsync git neofetch htop nano exfatprogs fuse-exfat ntfs-3g flac jasper aria2 curl wget cmake clang imagemagick go timeshift btop zoxide firefox vlc gimp qt6-multimedia-ffmpeg krita thunderbird trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat ufw gufw
 
 ติดตั้งจาก paru (AUR):
-paru -S libreoffice-fresh pamac-gtk discord telegram-desktop postman-bin docker visual-studio-code-bin github-cli docker-compose archlinux-tweak-tool-git
+- paru -S preload libreoffice-fresh pamac-gtk discord telegram-desktop postman-bin docker visual-studio-code-bin github-cli docker-compose archlinux-tweak-tool-git
 
 Note:
 - qt6-multimedia-ffmpeg → กดเบอร์ 1 ตอนถาม (ถ้ามีตัวเลือก)
@@ -84,29 +84,29 @@ Note:
 ----------------------------
 
 [📦 โปรแกรมพื้นฐาน]
-- โชว์สเปคเครื่อง:              neofetch
-- ดู CPU/RAM แบบ UI:           btop
-- ลบไฟล์แบบปลอดภัย:          trash-put <ไฟล์>
-- คืนไฟล์จากถังขยะ:           trash-restore
-- แสดงไฟล์แบบมีสี:            bat <ไฟล์>
-- ดาวน์โหลดแรง ๆ:             aria2c http://url
+- โชว์สเปคเครื่อง:               neofetch
+- ดู CPU/RAM แบบ UI:         btop
+- ลบไฟล์แบบปลอดภัย:           trash-put <ไฟล์>
+- คืนไฟล์จากถังขยะ:             trash-restore
+- แสดงไฟล์แบบมีสี:             bat <ไฟล์>
+- ดาวน์โหลดแรง ๆ:            aria2c http://url
 
 [🧠 zoxide]
-- cd แบบฉลาด:                 z <ชื่อโฟลเดอร์ที่เคยเข้า>
-- ดู history:                   zoxide query -l
+- cd แบบฉลาด:              z <ชื่อโฟลเดอร์ที่เคยเข้า>
+- ดู history:              zoxide query -l
 
 [🐙 GitHub CLI]
-- login:                       gh auth login
-- โคลน repo:                  gh repo clone user/repo
-- สร้าง repo ใหม่:             gh repo create
+- login:                   gh auth login
+- โคลน repo:               gh repo clone user/repo
+- สร้าง repo ใหม่:           gh repo create
 
 [🛡️ timeshift]
 - สร้าง snapshot:             sudo timeshift --create --comments "before update" --tags D
-- ดู snapshot:                sudo timeshift --list
+- ดู snapshot:               sudo timeshift --list
 - คืนค่า snapshot:            sudo timeshift --restore
 
 [🐳 docker-compose]
-- รัน container:               docker-compose up
+- รัน container:              docker-compose up
 - ปิด container:              docker-compose down
 
 [🎥 OBS Studio]
@@ -114,27 +114,27 @@ Note:
 
 [💬 โปรแกรม GUI]
 - เปิด Discord:               discord
-- เปิด Telegram:             telegram-desktop
-- เปิด Postman:              postman
+- เปิด Telegram:              telegram-desktop
+- เปิด Postman:               postman
 
 [🛍 pamac-gtk]
 - เปิด App Store:             pamac-manager
 
 [🧰 trash-cli เพิ่มเติม]
 - ล้างถังขยะ:                trash-empty
-- ดูไฟล์ที่ถูกลบ:             trash-list
+- ดูไฟล์ที่ถูกลบ:              trash-list
 
 [📖 bat (แทน cat)]
 - ดูไฟล์มีไฮไลต์:             bat file.txt
-- ไม่มี paging:               bat --paging=never file.txt
-- แบบ clean:                 bat -p file.txt
+- ไม่มี paging:            bat --paging=never file.txt
+- แบบ clean:             bat -p file.txt
 
 📝 แนะนำตั้ง alias:
-    echo 'alias cat="bat --paging=never"' >> ~/.bashrc
+    echo 'alias cat="bat"' >> ~/.bashrc
     source ~/.bashrc
 
 [🌐 เครือข่าย (iputils/inetutils)]
-- ping:                       ping google.com
+- ping:                      ping google.com
 - ดู IP:                      ip a
 - traceroute:                traceroute google.com
 - hostname:                  hostname
