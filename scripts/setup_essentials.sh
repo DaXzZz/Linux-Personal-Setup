@@ -88,11 +88,11 @@ prompt_yes_no "Install core desktop apps & tools?" && {
     sudo pacman -S \
         p7zip unrar tar rsync git neofetch htop nano exfatprogs fuse-exfat ntfs-3g flac jasper aria2 curl wget \
         cmake clang imagemagick go timeshift btop zoxide firefox vlc gimp qt6-multimedia-ffmpeg krita thunderbird \
-        trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat preload ufw gufw
+        trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat ufw gufw
 
     # Packages via paru
     paru -S \
-        libreoffice-fresh pamac-gtk discord telegram-desktop postman-bin docker visual-studio-code-bin \
+        preload libreoffice-fresh pamac-gtk discord telegram-desktop postman-bin docker visual-studio-code-bin \
         github-cli docker-compose archlinux-tweak-tool-git
 }
 
