@@ -83,12 +83,17 @@ prompt_yes_no "Install fonts?" && {
 
 # Full app suite
 prompt_yes_no "Install core desktop apps & tools?" && {
-    paru -S --noconfirm \
+
+    # Packages via pacman
+    sudo pacman -S \
         p7zip unrar tar rsync git neofetch htop exfatprogs fuse-exfat ntfs-3g flac jasper aria2 curl wget \
-        timeshift btop zoxide firefox libreoffice-fresh vlc gimp kdenlive qt6-multimedia-ffmpeg krita thunderbird \
-        trash-cli iputils inetutils intel-ucode pamac-gtk obs-studio discord telegram-desktop postman-bin \
-        docker visual-studio-code-bin github-cli docker-compose bat preload ufw gufw archlinux-tweak-tool-git \
-        python python-pip nodejs npm
+        timeshift btop zoxide firefox vlc gimp qt6-multimedia-ffmpeg krita thunderbird trash-cli iputils \
+        inetutils intel-ucode obs-studio python python-pip nodejs npm bat preload ufw gufw
+
+    # Packages via paru
+    paru -S \
+        libreoffice-fresh pamac-gtk discord telegram-desktop postman-bin docker visual-studio-code-bin \
+        github-cli docker-compose archlinux-tweak-tool-git
 }
 
 echo -e "\n✅ Setup complete! You may now run ./install.sh to restore your configs."
