@@ -1,53 +1,79 @@
-# ─────────────────────
-# 🌐 NETWORKING (Linux vs Windows)
-# ─────────────────────
+============================
+🌐 BASIC NETWORKING
+============================
+- ip a                                               # Show IP addresses and interfaces
+- ip link show                                       # Show network links
+- ip route                                           # Show routing table
+- ip r                                               # Short form for ip route
+- ping 8.8.8.8                                       # Test network connectivity (ICMP)
+- ping google.com                                    # Test DNS resolution
+- traceroute 8.8.8.8                                 # Trace network path (requires traceroute)
+- curl -s ifconfig.me                                # Get public IP address
+- host google.com                                    # Resolve DNS (requires bind-tools)
+- dig google.com                                     # DNS lookup (detailed) (requires bind-tools)
+- nslookup google.com                                # Another DNS query tool
+- wget --spider https://example.com                  # Check if a website is reachable (HEAD request)
 
-# 📡 Show Network Interfaces and IPs
-- ip a                                                # Show all network interfaces (like `ipconfig`)
-- ip -brief a                                         # Short version showing interface + IP (quick check)
-- nmcli device show                                   # Detailed info: IP, DNS, MAC, Gateway, etc.
-- ifconfig                                            # Legacy tool (must install: net-tools)
+============================
+🛠️ NETWORK MANAGEMENT
+============================
+- nmcli dev                                          # Show devices managed by NetworkManager
+- nmcli dev wifi list                                # List available Wi-Fi networks
+- nmcli dev wifi connect "SSID" password "password"  # Connect to a Wi-Fi network
+- nmcli con show                                     # Show saved network connections
+- nmcli con up "connection-name"                     # Bring up a connection
+- nmcli con down "connection-name"                   # Bring down a connection
+- nmtui                                              # Text UI for managing networks
+- systemctl restart NetworkManager                   # Restart NetworkManager
 
-# 📍 IP Address Management
-- sudo dhclient                                       # Renew DHCP lease (like `ipconfig /renew`)
-- sudo dhclient -r                                    # Release DHCP lease (like `ipconfig /release`)
-- ip addr flush dev wlan0                             # Clear/reset IP address on wlan0
+============================
+🧩 FIREWALL CONTROL (UFW)
+============================
+- sudo ufw status verbose                            # View UFW status with details
+- sudo ufw allow 22/tcp                              # Allow SSH port
+- sudo ufw allow 80/tcp                              # Allow HTTP port
+- sudo ufw allow 443/tcp                             # Allow HTTPS port
+- sudo ufw deny <port>/tcp                           # Deny specific port
+- sudo ufw delete allow 8080/tcp                     # Remove allowed port rule
+- sudo ufw reload                                    # Reload UFW rules
 
-# 📶 Wi-Fi & Ethernet Management
-- nmcli device status                                 # Show interface names and connection status
-- nmcli connection show                               # Show saved network profiles
-- nmcli device wifi list                              # Scan for nearby Wi-Fi networks
-- nmtui                                               # Text GUI to connect/change Wi-Fi or Ethernet
+============================
+📡 NETWORK TROUBLESHOOTING
+============================
+- arp -a                                             # View ARP table
+- ss -tuln                                           # View listening ports and services (modern netstat)
+- netstat -tulnp                                     # (If net-tools installed) View open ports and connections
+- lsof -i                                            # List open files and ports (requires lsof)
+- tcpdump -i any                                     # Capture packets on all interfaces (requires tcpdump)
+- sudo nmap -sP 192.168.1.0/24                       # Ping scan network (requires nmap)
+- sudo nmap -sV -p 22,80,443 <IP>                    # Scan services and versions on target IP
 
-# 🔧 Set Static IP (wlan0 or eth0)
-- nmcli connection show                               # Find your connection name (e.g. "Ryu")
-- nmcli connection modify "Ryu" ipv4.addresses 192.168.1.100/24        # Set static IP
-- nmcli connection modify "Ryu" ipv4.gateway 192.168.1.1               # Set gateway (e.g. switch/router)
-- nmcli connection modify "Ryu" ipv4.dns 8.8.8.8                       # Set DNS
-- nmcli connection modify "Ryu" ipv4.method manual                    # Enable manual (static) config
-- nmcli connection down "Ryu" && nmcli connection up "Ryu"            # Restart to apply
+============================
+🔐 SSH & REMOTE ACCESS
+============================
+- ssh user@remote-ip                                 # SSH into a remote server
+- ssh-copy-id user@remote-ip                         # Copy SSH key to remote server
+- scp file.txt user@remote-ip:/path/                 # Copy file over SSH
+- rsync -avz file/ user@remote-ip:/path/              # Sync files over SSH
 
-# 🔁 Switch Back to DHCP
-- nmcli connection modify "Ryu" ipv4.method auto                      # Switch back to DHCP
-- nmcli connection down "Ryu" && nmcli connection up "Ryu"            # Restart connection
+============================
+📦 NETWORK TOOLS INSTALLED BY SCRIPT
+============================
+- iputils                                            # Provides ping, traceroute
+- inetutils                                           # Provides FTP, hostname, ifconfig (legacy)
+- aria2c                                             # Download files via HTTP/FTP/Bittorrent
+- reflector                                          # Manage pacman mirrors over network
 
-# 🔁 Restart or Reload Network
-- sudo systemctl restart NetworkManager                               # Restart network service
-- nmcli networking off && nmcli networking on                         # Soft reset network stack
+============================
+📝 EXTRAS
+============================
+- watch -n 1 ip a                                    # Monitor IP addresses dynamically
+- sudo ss -s                                         # Show overall network statistics summary
+- mtr google.com                                     # Real-time traceroute/ping (requires mtr)
 
-# 📤 Test Network Connection
-- ping 8.8.8.8                                                        # Ping Google DNS
-- ping archlinux.org                                                  # Ping website
-- traceroute archlinux.org                                            # Trace route to target (needs `traceroute`)
-- curl ifconfig.me                                                    # Show your public IP address
-- dig archlinux.org                                                   # DNS info (like `nslookup`, needs `bind`)
-- nslookup archlinux.org                                              # Also available with `bind`
-
-# 🔒 Firewall (Optional)
-- sudo ufw status                                                     # Check if firewall is active (if using UFW)
-- sudo ufw enable                                                     # Enable basic firewall
-- sudo ufw allow 22/tcp                                               # Allow SSH (example rule)
-
-# 🌐 GUI Tools
-- nm-connection-editor                                                # Edit network profiles (static IP, DNS, etc.)
-- nm-applet                                                           # Start GTK tray icon (requires Waybar tray)
+============================
+🛡️ หมายเหตุ
+============================
+- Some additional tools need to be installed: nmap, tcpdump, mtr, traceroute
+- `ss` command can replace `netstat` in all cases on newer systems
+- UFW is suitable for simple firewall setup on small Client or Server machines
