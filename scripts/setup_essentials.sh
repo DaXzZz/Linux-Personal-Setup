@@ -11,6 +11,7 @@ echo "  • Paru - AUR helper"
 echo "  • Starship - Modern shell prompt"
 echo "  • Fonts - For icons and UI display"
 echo "  • Full app suite (VSCode, Python, Node.js, etc.)"
+echo "  • Zsh Shell with Plugins"
 echo "==========================================================="
 
 read -p "Do you want to continue with the installation? (y/n): " confirm
@@ -23,9 +24,20 @@ fi
 echo -e "\nInstall mode:"
 echo "1) Automatic - Install everything without asking"
 echo "2) Interactive (default) - Confirm before each major step"
-read -p "Choose [1/2] (default 2): " mode
+echo "3) Install Oh-My-Zsh Only"
+read -p "Choose [1/2/3] (default 2): " mode
 
-# Default to 2 (Interactive) if no input
+if [[ "$mode" == "3" ]]; then
+    echo -e "\nInstalling Zsh and Oh-My-Zsh..."
+    install_pacman_pkg zsh
+    if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    else
+        echo "✅ Oh-My-Zsh already installed. Skipping."
+    fi
+    exit 0
+fi
+
 if [[ -z "$mode" || "$mode" == "2" ]]; then
     AUTO_MODE=false
 else
@@ -34,7 +46,6 @@ fi
 
 set -e
 
-# Helper: prompt yes/no
 prompt_yes_no() {
     [[ "$AUTO_MODE" == "true" ]] && return 0
     while true; do
@@ -47,7 +58,6 @@ prompt_yes_no() {
     done
 }
 
-# Install via pacman (with skipping message)
 install_pacman_pkg() {
     pkg="$1"
     if pacman -Q "$pkg" &>/dev/null; then
@@ -58,7 +68,6 @@ install_pacman_pkg() {
     fi
 }
 
-# Install via paru (with skipping message)
 install_paru_pkg() {
     pkg="$1"
     if paru -Q "$pkg" &>/dev/null; then
@@ -69,11 +78,9 @@ install_paru_pkg() {
     fi
 }
 
-# git + base-devel (for paru build)
 install_pacman_pkg git
 install_pacman_pkg base-devel
 
-# Install paru (if not already installed)
 if ! command -v paru &>/dev/null; then
     prompt_yes_no "Install paru (AUR helper)?" && {
         cd /tmp
@@ -81,6 +88,8 @@ if ! command -v paru &>/dev/null; then
         cd paru
         makepkg -si --noconfirm
     }
+else
+    echo "✅ paru already installed. Skipping."
 fi
 
 prompt_yes_no "Install Zsh and Oh-My-Zsh?" && {
@@ -92,19 +101,15 @@ prompt_yes_no "Install Zsh and Oh-My-Zsh?" && {
     fi
 }
 
-# Install Starship prompt
 prompt_yes_no "Install Starship prompt?" && install_pacman_pkg starship
 
-# Install Fonts
 prompt_yes_no "Install fonts?" && {
     install_pacman_pkg ttf-jetbrains-mono-nerd
     install_pacman_pkg noto-fonts
     install_pacman_pkg noto-fonts-emoji
 }
 
-# Install Full app suite
 prompt_yes_no "Install core desktop apps & tools?" && {
-    # Packages via pacman
     for pkg in \
         p7zip unrar tar rsync git neofetch htop nano exfatprogs ntfs-3g flac jasper aria2 curl wget \
         cmake clang imagemagick go timeshift btop zoxide firefox vlc gimp qt6-multimedia-ffmpeg krita thunderbird \
@@ -112,7 +117,6 @@ prompt_yes_no "Install core desktop apps & tools?" && {
         install_pacman_pkg "$pkg"
     done
 
-    # Packages via paru
     for pkg in \
         preload libreoffice-fresh pamac-gtk discord telegram-desktop postman-bin docker visual-studio-code-bin \
         github-cli docker-compose archlinux-tweak-tool-git; do
@@ -121,13 +125,11 @@ prompt_yes_no "Install core desktop apps & tools?" && {
 }
 
 # Install ZSH extra plugins
-prompt_yes_no "Install extra Zsh plugins (zsh-completions, you-should-use)?" && {
-    mkdir -p ~/.oh-my-zsh/custom/plugins
-    cd ~/.oh-my-zsh/custom/plugins
-    
-    [[ ! -d zsh-completions ]] && git clone https://github.com/zsh-users/zsh-completions.git
-    [[ ! -d zsh-you-should-use ]] && git clone https://github.com/MichaelAquilina/zsh-you-should-use.git
-}
+mkdir -p ~/.oh-my-zsh/custom/plugins
+cd ~/.oh-my-zsh/custom/plugins
+
+[[ -d zsh-completions ]] && echo "✅ zsh-completions already installed. Skipping." || git clone https://github.com/zsh-users/zsh-completions.git
+[[ -d zsh-you-should-use ]] && echo "✅ you-should-use already installed. Skipping." || git clone https://github.com/MichaelAquilina/zsh-you-should-use.git
 
 # Check current Git config
 git_username=$(git config --global --get user.name)
