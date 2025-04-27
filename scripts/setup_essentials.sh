@@ -222,11 +222,19 @@ fi
 
 # Final message
 echo -e "\n✅ Setup complete!"
-echo "⚡ Please check these manual steps (not fully automated by script):"
-echo "- Setup Zoxide in your shell config (~/.bashrc or ~/.zshrc)"
-echo "- Setup SSH Key if needed (ssh-keygen)"
-echo "- Create Timeshift snapshot before big updates (timeshift --create)"
-echo "- Fine-tune firewall rules (ufw allow/deny ports) if needed"
-echo "- Review and customize your system settings"
+echo "⚡ Please complete these manual steps (not fully automated):"
+echo "- Edit /etc/pacman.conf to enable ParallelDownloads and add ILoveCandy"
+echo "- Setup shell integration for Zoxide (add 'eval \"\$(zoxide init bash)\"' to ~/.bashrc or ~/.zshrc)"
+echo "- Create SSH Key if needed: ssh-keygen -t ed25519"
+echo "- Create Timeshift snapshot before major updates: timeshift --create"
+echo "- Review and fine-tune UFW firewall rules: ufw allow/deny <ports>"
+echo "- (Optional) Switch Desktop Manager: disable GDM, enable SDDM"
+echo "- Regularly update system: sudo pacman -Syu && paru -Syu"
+echo "- Clean up old package caches: sudo pacman -Sc"
+echo "- Check system services: systemctl status"
+echo "- Monitor disk usage: df -h"
+echo "- Identify and remove orphan packages: sudo pacman -Rns \$(pacman -Qtdq)"
+echo "- Customize system settings to fit your needs"
 echo -e "\n📚 Refer to the full Arch Linux First Setup Guide for detailed instructions."
+
 exit 0
