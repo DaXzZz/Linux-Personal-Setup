@@ -111,7 +111,7 @@ prompt_yes_no "Install core desktop apps & tools?" && {
     done
 }
 
-# Show Git Status
+# Check current Git config
 echo -e "\n🔍 Current Git config:"
 git config --global --get user.name && git config --global --get user.email || echo "⚠️ No Git user.name or email set."
 
@@ -127,9 +127,17 @@ prompt_yes_no "Do you want to configure Git (username, email, default branch)?" 
     echo "✅ Git configuration has been updated."
 }
 
-# Update mirrorlist with reflector
-prompt_yes_no "Update mirrorlist with reflector?" && {
-    sudo reflector --verbose --latest 10 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+# Update mirrorlist with reflector (confirm loop)
+prompt_yes_no "Do you want to update the mirrorlist now?" && {
+    while true; do
+        sudo reflector --verbose --latest 10 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+        echo -e "\n🔍 Current top 5 mirrors:"
+        head -n 20 /etc/pacman.d/mirrorlist
+
+        prompt_yes_no "Are you satisfied with this mirrorlist?" && break
+        echo -e "\n🔁 Re-running reflector to fetch new mirrors...\n"
+    done
+
     sudo pacman -Syyu
 }
 
