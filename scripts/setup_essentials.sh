@@ -21,10 +21,16 @@ fi
 
 # Select mode
 echo -e "\nInstall mode:"
-echo "1) Automatic - No confirmations"
-echo "2) Interactive - Confirm each group"
-read -p "Choose [1/2]: " mode
-[[ "$mode" == "1" ]] && AUTO_MODE=true || AUTO_MODE=false
+echo "1) Automatic - Install everything without asking"
+echo "2) Interactive (default) - Confirm before each major step"
+read -p "Choose [1/2] (default 2): " mode
+
+# Default to 2 (Interactive) if no input
+if [[ -z "$mode" || "$mode" == "2" ]]; then
+    AUTO_MODE=false
+else
+    AUTO_MODE=true
+fi
 
 set -e
 
