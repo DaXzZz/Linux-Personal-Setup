@@ -61,6 +61,7 @@ SAVEHIST=10000
 setopt appendhistory
 
 # ─────────────────────────────
-# 🚀 Starship Prompt
+# 🚀 Starship Prompt & Default Theme
 # ─────────────────────────────
-eval "$(starship init zsh)"
+#eval "$(starship init zsh)"
+eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/EDM115-newline.omp.json)"
