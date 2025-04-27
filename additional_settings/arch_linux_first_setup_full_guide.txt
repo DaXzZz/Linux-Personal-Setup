@@ -11,7 +11,7 @@
 ----------------------------
 
 ▶️ ติดตั้งแพ็กเกจจาก Official Repo (pacman):
-sudo pacman -S p7zip unrar tar rsync git neofetch htop nano exfatprogs fuse-exfat ntfs-3g flac jasper aria2 curl wget cmake clang imagemagick go timeshift btop zoxide firefox vlc gimp qt6-multimedia-ffmpeg krita thunderbird trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat ufw gufw reflector
+sudo pacman -S p7zip unrar tar rsync git neofetch htop nano exfatprogs ntfs-3g flac jasper aria2 curl wget cmake clang imagemagick go timeshift btop zoxide firefox vlc gimp qt6-multimedia-ffmpeg krita thunderbird trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat ufw gufw reflector
 
 🔍 คำอธิบาย: ติดตั้งแพ็กเกจพื้นฐานจาก Official Repo ด้วย package manager ของ Arch Linux
 
