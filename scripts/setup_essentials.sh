@@ -111,11 +111,12 @@ prompt_yes_no "Install core desktop apps & tools?" && {
     done
 }
 
+# Show Git Status
+echo -e "\n🔍 Current Git config:"
+git config --global --get user.name && git config --global --get user.email || echo "⚠️ No Git user.name or email set."
+
 # Configure Git
 prompt_yes_no "Do you want to configure Git (username, email, default branch)?" && {
-    echo -e "\n🔍 Current Git config:"
-    git config --global --get user.name && git config --global --get user.email || echo "⚠️ No Git user.name or email set."
-
     read -p "Enter your Git username: " git_username
     read -p "Enter your Git email: " git_email
     git config --global user.name "$git_username"
