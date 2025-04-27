@@ -83,6 +83,15 @@ if ! command -v paru &>/dev/null; then
     }
 fi
 
+prompt_yes_no "Install Zsh and Oh-My-Zsh?" && {
+    install_pacman_pkg zsh
+    if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    else
+        echo "✅ Oh-My-Zsh already installed. Skipping."
+    fi
+}
+
 # Install Starship prompt
 prompt_yes_no "Install Starship prompt?" && install_pacman_pkg starship
 
@@ -109,6 +118,15 @@ prompt_yes_no "Install core desktop apps & tools?" && {
         github-cli docker-compose archlinux-tweak-tool-git; do
         install_paru_pkg "$pkg"
     done
+}
+
+# Install ZSH extra plugins
+prompt_yes_no "Install extra Zsh plugins (zsh-completions, you-should-use)?" && {
+    mkdir -p ~/.oh-my-zsh/custom/plugins
+    cd ~/.oh-my-zsh/custom/plugins
+    
+    [[ ! -d zsh-completions ]] && git clone https://github.com/zsh-users/zsh-completions.git
+    [[ ! -d zsh-you-should-use ]] && git clone https://github.com/MichaelAquilina/zsh-you-should-use.git
 }
 
 # Check current Git config
