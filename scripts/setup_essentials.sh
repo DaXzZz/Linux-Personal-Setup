@@ -92,16 +92,26 @@ else
     echo "✅ paru already installed. Skipping."
 fi
 
-prompt_yes_no "Install Zsh and Oh-My-Zsh?" && {
-    install_pacman_pkg zsh
-    if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-    else
-        echo "✅ Oh-My-Zsh already installed. Skipping."
-    fi
-}
+# Check zsh
+if command -v zsh &>/dev/null; then
+    echo "✅ Zsh already installed. Skipping."
+else
+    prompt_yes_no "Install Zsh and Oh-My-Zsh?" && {
+        install_pacman_pkg zsh
+        if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+            sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+        else
+            echo "✅ Oh-My-Zsh already installed. Skipping."
+        fi
+    }
+fi
 
-prompt_yes_no "Install Starship prompt?" && install_pacman_pkg starship
+# Check starship
+if command -v starship &>/dev/null; then
+    echo "✅ Starship already installed. Skipping."
+else
+    prompt_yes_no "Install Starship prompt?" && install_pacman_pkg starship
+fi
 
 prompt_yes_no "Install fonts?" && {
     install_pacman_pkg ttf-jetbrains-mono-nerd
