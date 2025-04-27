@@ -41,18 +41,24 @@ prompt_yes_no() {
     done
 }
 
-# Install via pacman
+# Install via pacman (with skipping message)
 install_pacman_pkg() {
     pkg="$1"
-    if ! pacman -Q "$pkg" &>/dev/null; then
+    if pacman -Q "$pkg" &>/dev/null; then
+        echo "✅ $pkg is already installed. Skipping."
+    else
+        echo "⬇️ Installing $pkg..."
         sudo pacman -S --noconfirm "$pkg"
     fi
 }
 
-# Install via paru
+# Install via paru (with skipping message)
 install_paru_pkg() {
     pkg="$1"
-    if ! paru -Q "$pkg" &>/dev/null; then
+    if paru -Q "$pkg" &>/dev/null; then
+        echo "✅ $pkg is already installed (AUR). Skipping."
+    else
+        echo "⬇️ Installing $pkg (from AUR)..."
         paru -S --noconfirm "$pkg"
     fi
 }
@@ -84,15 +90,19 @@ prompt_yes_no "Install fonts?" && {
 # Install Full app suite
 prompt_yes_no "Install core desktop apps & tools?" && {
     # Packages via pacman
-    sudo pacman -S \
+    for pkg in \
         p7zip unrar tar rsync git neofetch htop nano exfatprogs fuse-exfat ntfs-3g flac jasper aria2 curl wget \
         cmake clang imagemagick go timeshift btop zoxide firefox vlc gimp qt6-multimedia-ffmpeg krita thunderbird \
-        trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat ufw gufw reflector
+        trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat ufw gufw reflector; do
+        install_pacman_pkg "$pkg"
+    done
 
     # Packages via paru
-    paru -S \
+    for pkg in \
         preload libreoffice-fresh pamac-gtk discord telegram-desktop postman-bin docker visual-studio-code-bin \
-        github-cli docker-compose archlinux-tweak-tool-git
+        github-cli docker-compose archlinux-tweak-tool-git; do
+        install_paru_pkg "$pkg"
+    done
 }
 
 # Configure Git
