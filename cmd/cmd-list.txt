@@ -1,5 +1,3 @@
-Arch Linux Command Manual 🚀
-
 ============================
 📦 PACKAGE MANAGEMENT
 ============================
