@@ -12,6 +12,7 @@ echo "  • Starship - Modern shell prompt"
 echo "  • Fonts - For icons and UI display"
 echo "  • Full app suite (VSCode, Python, Node.js, etc.)"
 echo "  • Zsh Shell with Plugins"
+echo "  • Oh My Posh with EDM115-newline theme (optional)"
 echo "==========================================================="
 
 read -p "Do you want to continue with the installation? (y/n): " confirm
@@ -25,7 +26,8 @@ echo -e "\nInstall mode:"
 echo "1) Automatic - Install everything without asking"
 echo "2) Interactive (default) - Confirm before each major step"
 echo "3) Install Oh-My-Zsh Only"
-read -p "Choose [1/2/3] (default 2): " mode
+echo "4) Install Oh My Posh with EDM115-newline theme"
+read -p "Choose [1/2/3/4] (default 2): " mode
 
 if [[ "$mode" == "3" ]]; then
     echo -e "\nInstalling Zsh and Oh-My-Zsh..."
@@ -35,6 +37,10 @@ if [[ "$mode" == "3" ]]; then
     else
         echo "✅ Oh-My-Zsh already installed. Skipping."
     fi
+    exit 0
+elif [[ "$mode" == "4" ]]; then
+    echo -e "\nInstalling Oh My Posh and EDM115-newline theme..."
+    install_oh_my_posh
     exit 0
 fi
 
@@ -76,6 +82,135 @@ install_paru_pkg() {
         echo "⬇️ Installing $pkg (from AUR)..."
         paru -S --noconfirm "$pkg"
     fi
+}
+
+install_oh_my_posh() {
+    # Install Oh My Posh
+    if command -v oh-my-posh &>/dev/null; then
+        echo "✅ Oh My Posh already installed. Skipping."
+    else
+        echo "⬇️ Installing Oh My Posh..."
+        sudo pacman -S --noconfirm oh-my-posh
+    fi
+
+    # Create Oh My Posh config directory
+    mkdir -p ~/.config/ohmyposh
+
+    # Write EDM115-newline.omp.json
+    echo "⬇️ Creating Oh My Posh theme: EDM115-newline.omp.json..."
+    cat > ~/.config/ohmyposh/EDM115-newline.omp.json << 'EOF'
+{
+  "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
+  "blocks": [
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "segments": [
+        {
+          "properties": {
+            "cache_duration": "none"
+          },
+          "template": "\n\u256d\u2500",
+          "foreground": "#f8f8f2",
+          "type": "text",
+          "style": "plain"
+        },
+        {
+          "properties": {
+            "cache_duration": "none"
+          },
+          "leading_diamond": "\ue0b6",
+          "template": "{{ .UserName }}",
+          "foreground": "#f8f8f2",
+          "background": "#282a36",
+          "type": "session",
+          "style": "diamond"
+        },
+        {
+          "properties": {
+            "cache_duration": "none"
+          },
+          "template": "\udb85\udc0b",
+          "foreground": "#ff5555",
+          "powerline_symbol": "\ue0b0",
+          "background": "#282a36",
+          "type": "root",
+          "style": "powerline"
+        },
+        {
+          "properties": {
+            "cache_duration": "none"
+          },
+          "template": "{{ .Icon }}  ",
+          "foreground": "#f8f8f2",
+          "powerline_symbol": "\ue0b0",
+          "background": "#282a36",
+          "type": "os",
+          "style": "powerline"
+        },
+        {
+          "properties": {
+            "cache_duration": "none",
+            "style": "full"
+          },
+          "trailing_diamond": "\ue0b4",
+          "template": " \udb80\ude56 {{ path .Path .Location }}",
+          "foreground": "#282a36",
+          "background": "#cccccc",
+          "type": "path",
+          "style": "diamond"
+        },
+        {
+          "properties": {
+            "branch_icon": "",
+            "cache_duration": "none",
+            "display_changing_color": true,
+            "fetch_status": true,
+            "fetch_upstream_icon": true,
+            "full_branch_path": true
+          },
+          "leading_diamond": "\ue0b6",
+          "trailing_diamond": "\ue0b4",
+          "template": "\ue725 ({{ url .UpstreamIcon .UpstreamURL }} {{ url .HEAD .UpstreamURL }}){{ if gt .Ahead 0 }}<#50fa7b> +{{ .Ahead }}</>{{ end }}{{ if gt .Behind 0 }}<#ff5555> -{{ .Behind }}</>{{ end }}{{ if .Working.Changed }}<#f8f8f2> \uf044 {{ .Working.String }}</>{{ end }}{{ if .Staging.Changed }}<#f8f8f2> \uf046 {{ .Staging.String }}</>{{ end }}",
+          "foreground": "#282a36",
+          "background": "#ffb86c",
+          "type": "git",
+          "style": "diamond"
+        }
+      ]
+    },
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "segments": [
+        {
+          "properties": {
+            "always_enabled": true,
+            "cache_duration": "none"
+          },
+          "template": "\u2570\u2500 ❯❯",
+          "foreground": "#f8f8f2",
+          "type": "text",
+          "style": "diamond"
+        }
+      ],
+      "newline": true
+    }
+  ],
+  "version": 3,
+  "patch_pwsh_bleed": true,
+  "final_space": true
+}
+EOF
+
+    # Update .zshrc to use Oh My Posh
+    if grep -q "oh-my-posh" ~/.zshrc; then
+        echo "✅ Oh My Posh already configured in .zshrc. Skipping."
+    else
+        echo "⬇️ Adding Oh My Posh initialization to .zshrc..."
+        echo 'eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/EDM115-newline.omp.json)"' >> ~/.zsh  ~/.zshrc
+    fi
+    echo "✅ Oh My Posh setup complete with EDM115-newline theme."
 }
 
 install_pacman_pkg git
@@ -164,11 +299,13 @@ else
     }
 fi
 
-# Update mirrorlist with reflector (confirm loop)
+# Updatehoflector (confirm loop)
 prompt_yes_no "Do you want to update the mirrorlist now?" && {
     while true; do
         sudo reflector --verbose --latest 10 --protocol https --sort rate --download-timeout 20 --save /etc/pacman.d/mirrorlist
-        echo -e "\n🔍 Current top 5 mirrors:"
+        echo -e "\n🔍 Current top 
+
+5 mirrors:"
         head -n 20 /etc/pacman.d/mirrorlist
 
         prompt_yes_no "Are you satisfied with this mirrorlist?" && break
