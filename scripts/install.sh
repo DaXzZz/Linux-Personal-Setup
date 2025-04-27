@@ -1,9 +1,5 @@
+# install.sh
 #!/bin/bash
-#
-# INSTALL SCRIPT
-# =============
-# PURPOSE: Installs saved configuration files to their proper system locations
-#
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/config.sh"
@@ -14,10 +10,10 @@ echo "This utility will install your saved configurations from a backup folder."
 echo "=============================================================="
 
 # Recommend running setup_essentials.sh first
-echo -e "\n⚠️  RECOMMENDED: Run 'setup_essentials.sh' before continuing."
+echo -e "\n\u26a0\ufe0f  RECOMMENDED: Run 'setup_essentials.sh' before continuing."
 read -p "Have you already run setup_essentials.sh on this system? (y/n): " confirm_essentials
 if [[ ! "$confirm_essentials" =~ ^[Yy]$ ]]; then
-    echo "🛑 Please run setup_essentials.sh first, then rerun this script."
+    echo "\ud83d\uded1 Please run setup_essentials.sh first, then rerun this script."
     exit 1
 fi
 
@@ -35,7 +31,7 @@ select folder in "${CONFIG_SUBFOLDERS[@]}"; do
             echo -e "\nAvailable timestamped backups:"
             BACKUP_FOLDERS=($(ls -1 "$BACKUP_DIR" 2>/dev/null | sort -r))
             if [[ ${#BACKUP_FOLDERS[@]} -eq 0 ]]; then
-                echo "❌ No timestamped backups found in $BACKUP_DIR"
+                echo "\u274c No timestamped backups found in $BACKUP_DIR"
                 exit 1
             fi
             select backup in "${BACKUP_FOLDERS[@]}"; do
@@ -45,7 +41,7 @@ select folder in "${CONFIG_SUBFOLDERS[@]}"; do
                     mkdir -p "$TEMP_INSTALL_FOLDER"
                     rm -f "$TEMP_INSTALL_FOLDER"/*
 
-                    echo "⏳ Converting raw backup files to .txt format..."
+                    echo "\u23f3 Converting raw backup files to .txt format..."
                     for FILE in "${!RESTORE_PATHS[@]}"; do
                         SRC="$RAW_BACKUP_PATH/$(basename "${RESTORE_PATHS[$FILE]}")"
                         DEST="$TEMP_INSTALL_FOLDER/${FILE}.txt"
@@ -65,8 +61,7 @@ select folder in "${CONFIG_SUBFOLDERS[@]}"; do
     esac
 done
 
-# Confirm selected folder
-echo "📂 Using folder: $INSTALL_SOURCE_FOLDER"
+echo "\ud83d\udcc2 Using folder: $INSTALL_SOURCE_FOLDER"
 
 # Ask for installation mode
 echo -e "\nSelect installation mode:"
@@ -80,7 +75,6 @@ case "$INSTALL_MODE" in
     *) echo "Invalid selection. Defaulting to complete installation."; INSTALL_TYPE="complete" ;;
 esac
 
-# Count available configuration files
 AVAILABLE_CONFIGS=0
 for FILE in "${!RESTORE_PATHS[@]}"; do
   SRC="${INSTALL_SOURCE_FOLDER}/${FILE}.txt"
@@ -88,7 +82,7 @@ for FILE in "${!RESTORE_PATHS[@]}"; do
 done
 
 if [[ $AVAILABLE_CONFIGS -eq 0 ]]; then
-  echo "❌ Error: No configuration files found in $INSTALL_SOURCE_FOLDER"
+  echo "\u274c Error: No configuration files found in $INSTALL_SOURCE_FOLDER"
   exit 1
 fi
 
@@ -98,9 +92,11 @@ if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-# Prepare backup dir
+# Generate timestamp and backup directory
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+TIMED_BACKUP_DIR="${BACKUP_DIR}/backup_${TIMESTAMP}"
 mkdir -p "$TIMED_BACKUP_DIR"
-echo -e "\n📁 Backup directory: $TIMED_BACKUP_DIR"
+echo -e "\n\ud83d\udcc1 Backup directory: $TIMED_BACKUP_DIR"
 
 files_installed=0
 files_backed_up=0
@@ -125,7 +121,7 @@ for FILE in "${!RESTORE_PATHS[@]}"; do
   if [[ "$INSTALL_TYPE" == "selective" ]]; then
     read -p "Install $FILE to $DEST? (y/n): " SELECT_FILE
     if [[ ! "$SELECT_FILE" =~ ^[Yy]$ ]]; then
-        echo "⏭️ Skipped: $FILE"
+        echo "\u23ed\ufe0f Skipped: $FILE"
         files_skipped=$((files_skipped + 1))
         echo "-----------------------------------"
         continue
@@ -133,33 +129,33 @@ for FILE in "${!RESTORE_PATHS[@]}"; do
   fi
 
   mkdir -p "$(dirname "$DEST")" 2>/dev/null || {
-    echo "⚠️  Failed to create directory: $(dirname "$DEST")"
+    echo "\u26a0\ufe0f Failed to create directory: $(dirname "$DEST")"
     echo "-----------------------------------"
     continue
   }
 
   if [[ -f "$DEST" ]]; then
     cp "$DEST" "$TIMED_BACKUP_DIR/$(basename "$DEST")" 2>/dev/null && {
-      echo "🔄 Backup of $(basename "$DEST") saved to $TIMED_BACKUP_DIR"
+      echo "\ud83d\udd04 Backup of $(basename "$DEST") saved to $TIMED_BACKUP_DIR"
       files_backed_up=$((files_backed_up + 1))
     }
   fi
 
   if [[ "$DEST" == /etc/* ]]; then
-    echo "🔧 Installing (sudo): ${FILE}.txt -> $DEST"
+    echo "\ud83d\udd27 Installing (sudo): ${FILE}.txt -> $DEST"
     sudo cp -f "$SRC" "$DEST" 2>/dev/null
     RESULT=$?
   else
-    echo "📁 Installing: ${FILE}.txt -> $DEST"
+    echo "\ud83d\udcc1 Installing: ${FILE}.txt -> $DEST"
     cp -f "$SRC" "$DEST" 2>/dev/null
     RESULT=$?
   fi
 
   if [[ $RESULT -eq 0 ]]; then
-    echo "✅ Installed: $DEST"
+    echo "\u2705 Installed: $DEST"
     files_installed=$((files_installed + 1))
   else
-    echo "⚠️  Failed to install: $DEST"
+    echo "\u26a0\ufe0f Failed to install: $DEST"
     files_skipped=$((files_skipped + 1))
   fi
   echo "-----------------------------------"
@@ -167,30 +163,31 @@ done
 
 # Summary
 echo -e "\n========== INSTALLATION SUMMARY =========="
-echo "📊 Statistics:"
+echo "\ud83d\udcca Statistics:"
 echo "   - Files installed: $files_installed"
 echo "   - Files backed up: $files_backed_up"
 echo "   - Files skipped: $files_skipped"
 echo "   - Files missing: $files_missing"
-echo -e "\n💾 Installed from: $INSTALL_SOURCE_FOLDER"
-echo "🛡️  Backups saved to: $TIMED_BACKUP_DIR"
+echo -e "\n\ud83d\udcc0 Installed from: $INSTALL_SOURCE_FOLDER"
+echo "\ud83d\udee1\ufe0f  Backups saved to: $TIMED_BACKUP_DIR"
 
 # GRUB
+echo -e "\nChecking GRUB config..."
 if [[ -f "/etc/default/grub" && -f "${INSTALL_SOURCE_FOLDER}/grub.txt" ]]; then
   echo -e "\nGRUB configuration was updated."
   read -p "Do you want to regenerate GRUB config now? (y/n): " REPLY
   if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-    echo "🔄 Updating GRUB config..."
+    echo "\ud83d\udd04 Updating GRUB config..."
     if sudo grub-mkconfig -o /boot/grub/grub.cfg; then
-      echo "✅ GRUB config regenerated successfully."
+      echo "\u2705 GRUB config regenerated successfully."
     else
-      echo "⚠️  GRUB update failed, but other configs were installed successfully."
+      echo "\u26a0\ufe0f GRUB update failed, but other configs were installed successfully."
     fi
   else
-    echo "⏭️ Skipped GRUB regeneration."
+    echo "\u23ed\ufe0f Skipped GRUB regeneration."
     echo "Remember to run 'sudo grub-mkconfig -o /boot/grub/grub.cfg' manually."
   fi
 fi
 
-echo -e "\n✅ Installation complete!"
+echo -e "\n\u2705 Installation complete!"
 exit 0
