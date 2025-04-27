@@ -112,25 +112,32 @@ prompt_yes_no "Install core desktop apps & tools?" && {
 }
 
 # Check current Git config
-echo -e "\n🔍 Current Git config:"
-git config --global --get user.name && git config --global --get user.email || echo "⚠️ No Git user.name or email set."
+git_username=$(git config --global --get user.name)
+git_email=$(git config --global --get user.email)
 
-# Configure Git
-prompt_yes_no "Do you want to configure Git (username, email, default branch)?" && {
-    read -p "Enter your Git username: " git_username
-    read -p "Enter your Git email: " git_email
-    git config --global user.name "$git_username"
-    git config --global user.email "$git_email"
-    git config --global color.ui auto
-    git config --global init.defaultBranch main
-    git config --global core.editor nano
-    echo "✅ Git configuration has been updated."
-}
+if [[ -n "$git_username" && -n "$git_email" ]]; then
+    echo -e "\n✅ Git is already configured as:"
+    echo "user.name: $git_username"
+    echo "user.email: $git_email"
+    echo "🔹 Skipping Git configuration."
+else
+    echo -e "\n⚠️ No Git user.name or email set."
+    prompt_yes_no "Do you want to configure Git (username, email, default branch)?" && {
+        read -p "Enter your Git username: " git_username
+        read -p "Enter your Git email: " git_email
+        git config --global user.name "$git_username"
+        git config --global user.email "$git_email"
+        git config --global color.ui auto
+        git config --global init.defaultBranch main
+        git config --global core.editor nano
+        echo "✅ Git configuration has been updated."
+    }
+fi
 
 # Update mirrorlist with reflector (confirm loop)
 prompt_yes_no "Do you want to update the mirrorlist now?" && {
     while true; do
-        sudo reflector --verbose --latest 10 --protocol https --sort rate --timeout 20 --save /etc/pacman.d/mirrorlist
+        sudo reflector --verbose --latest 10 --protocol https --sort rate --download-timeout 20 --save /etc/pacman.d/mirrorlist
         echo -e "\n🔍 Current top 5 mirrors:"
         head -n 20 /etc/pacman.d/mirrorlist
 
@@ -158,11 +165,17 @@ prompt_yes_no "Set UFW to deny incoming and allow outgoing connections?" && {
 }
 
 # Enable Docker and add user to docker group
-prompt_yes_no "Enable Docker and add user to docker group?" && {
-    sudo systemctl enable --now docker
-    sudo usermod -aG docker $USER
-    echo "⚠️ Please reboot your system to apply Docker group permissions."
-}
+if groups $USER | grep -qw docker; then
+    docker_group_status="✅ User '$USER' is already in docker group. Skipping."
+    echo -e "\n$docker_group_status"
+else
+    docker_group_status="⚠️ User '$USER' is NOT in docker group."
+    prompt_yes_no "Enable Docker and add user to docker group?" && {
+        sudo systemctl enable --now docker
+        sudo usermod -aG docker $USER
+        echo "⚠️ Please reboot your system to apply Docker group permissions."
+    }
+fi
 
 # Final checklist
 echo -e "\n🔍 Final checklist for your system:\n"
@@ -194,6 +207,10 @@ if grep -q "https" /etc/pacman.d/mirrorlist; then
 else
     echo "⚠️ Mirrorlist might not be updated. Please run reflector manually."
 fi
+
+# Show Docker group status
+echo -e "\n▶️ Docker group status:"
+echo "$docker_group_status"
 
 # Check if GRUB config exists
 echo "▶️ Checking GRUB config..."
