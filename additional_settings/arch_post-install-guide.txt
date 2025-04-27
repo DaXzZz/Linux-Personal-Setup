@@ -1,0 +1,77 @@
+Arch Linux Post-Install Guide 🚀
+
+============================
+✅ What the Script Has Done
+============================
+- Installed basic programs (pacman and AUR)
+- Installed and configured Git (if not present)
+- Updated Mirrorlist and Pacman Database
+- Installed and enabled Firewall (UFW)
+- Enabled Preload Service
+- Installed and configured Docker (added User to Group)
+- Set up fonts and Shell Prompt (Starship)
+- Configured Reflector, Timeshift, Zoxide
+
+============================
+📋 Manual Steps After Running Script
+============================
+
+1️⃣ Configure pacman.conf
+- Open: sudo nano /etc/pacman.conf
+- Uncomment ParallelDownloads = 5
+- Add ILoveCandy below ParallelDownloads
+
+2️⃣ Change Display Manager (Optional)
+- Disable GDM: sudo systemctl disable --now gdm
+- Enable SDDM: sudo systemctl enable --now sddm
+- Reboot: reboot
+
+3️⃣ Set Up Zoxide in Shell Config
+- Bash: echo 'eval "$(zoxide init bash)"' >> ~/.bashrc && source ~/.bashrc
+- Zsh: echo 'eval "$(zoxide init zsh)"' >> ~/.zshrc && source ~/.zshrc
+
+4️⃣ Create SSH Key (If Needed)
+- Run: ssh-keygen -t ed25519 -C "you@example.com"
+- View Public Key: cat ~/.ssh/id_ed25519.pub
+
+5️⃣ Check Services
+- Preload: systemctl is-enabled preload && systemctl is-active preload
+- Docker: systemctl is-enabled docker && systemctl is-active docker
+- UFW: systemctl is-enabled ufw && systemctl is-active ufw
+
+6️⃣ Verify Docker Group
+- Check Groups: groups $USER
+- If docker is missing: sudo usermod -aG docker $USER && reboot
+
+7️⃣ Back Up System with Timeshift
+- Create Snapshot: sudo timeshift --create --comments "Before Update"
+
+8️⃣ Update System Regularly
+- Pacman: sudo pacman -Syu
+- AUR: paru -Syu
+
+9️⃣ Clean Package Cache
+- Run: sudo pacman -Sc
+
+============================
+🔥 System Maintenance
+============================
+- Check Service Status: systemctl status
+- Check Disk Usage: df -h
+- Find Orphan Packages: sudo pacman -Qdt
+- Remove Orphan Packages: sudo pacman -Rns $(pacman -Qtdq)
+
+============================
+🛡️ Special Notes
+============================
+- Docker: Reboot after adding User to Group
+- Timeshift: Always create Snapshot before major updates
+- UFW: Set Allow rules for special services (e.g., SSH: ufw allow 22)
+- Reflector Timeout: If Mirrorlist update fails, run:
+  sudo reflector --country Thailand,Singapore --latest 15 --protocol https --sort score --download-timeout 15 --save /etc/pacman.d/mirrorlist
+
+============================
+📚 References
+============================
+- Full Guide: https://archlinux.org
+- Mirror Status: https://archlinux.org/mirrors/status/
