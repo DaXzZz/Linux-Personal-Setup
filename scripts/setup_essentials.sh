@@ -46,7 +46,6 @@ if [[ "$mode" == "4" ]]; then
     cat << 'EOF' > ~/.config/ohmyposh/EDM115-newline.omp.json
 {
   "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
-
   "blocks": [
     {
       "type": "prompt",
@@ -227,6 +226,13 @@ else
     prompt_yes_no "Install Starship prompt?" && install_pacman_pkg starship
 fi
 
+# Check oh-my-posh
+if command -v oh-my-posh &>/dev/null; then
+    echo "✅ oh-my-posh already installed. Skipping."
+else
+    prompt_yes_no "Install oh-my-posh?" && install_paru_pkg oh-my-posh
+fi
+
 prompt_yes_no "Install fonts?" && {
     install_pacman_pkg ttf-jetbrains-mono-nerd
     install_pacman_pkg noto-fonts
@@ -253,7 +259,7 @@ mkdir -p ~/.oh-my-zsh/custom/plugins
 cd ~/.oh-my-zsh/custom/plugins
 
 [[ -d zsh-completions ]] && echo "✅ zsh-completions already installed. Skipping." || git clone https://github.com/zsh-users/zsh-completions.git
-[[ -d zsh-you-should-use ]] && echo "✅ you-should-use already installed. Skipping." || git clone https://github.com/MichaelAquilina/zsh-you-should-use.git
+[[ -d you-should-use ]] && echo "✅ you-should-use already installed. Skipping." || git clone https://github.com/MichaelAquilina/zsh-you-should-use.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/you-should-use
 
 # Check current Git config
 git_username=$(git config --global --get user.name)
