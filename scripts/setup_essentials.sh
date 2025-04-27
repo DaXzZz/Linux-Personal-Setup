@@ -97,7 +97,7 @@ prompt_yes_no "Install fonts?" && {
 prompt_yes_no "Install core desktop apps & tools?" && {
     # Packages via pacman
     for pkg in \
-        p7zip unrar tar rsync git neofetch htop nano exfatprogs fuse-exfat ntfs-3g flac jasper aria2 curl wget \
+        p7zip unrar tar rsync git neofetch htop nano exfatprogs ntfs-3g flac jasper aria2 curl wget \
         cmake clang imagemagick go timeshift btop zoxide firefox vlc gimp qt6-multimedia-ffmpeg krita thunderbird \
         trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat ufw gufw reflector; do
         install_pacman_pkg "$pkg"
@@ -170,6 +170,10 @@ systemctl is-active docker &>/dev/null && echo "✅ Docker service is active." |
 # Check if UFW firewall is active
 echo "▶️ Checking UFW firewall..."
 systemctl is-active ufw &>/dev/null && echo "✅ UFW is active." || echo "⚠️ UFW is NOT active."
+
+# Check UFW default policies
+echo "▶️ Checking UFW default policies..."
+sudo ufw status verbose | grep "Default" || echo "⚠️ Could not retrieve UFW default policies."
 
 # Check if Reflector updated the mirrorlist
 echo "▶️ Checking if mirrorlist was updated by Reflector..."
