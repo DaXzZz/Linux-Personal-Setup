@@ -12,7 +12,7 @@ echo "  • Starship - Modern shell prompt"
 echo "  • Fonts - For icons and UI display"
 echo "  • Full app suite (VSCode, Python, Node.js, etc.)"
 echo "  • Zsh Shell with Plugins"
-echo "  • Oh My Posh with EDM115-newline theme (optional)"
+echo "  • Oh-My-Posh theme (optional)"
 echo "==========================================================="
 
 read -p "Do you want to continue with the installation? (y/n): " confirm
@@ -26,7 +26,7 @@ echo -e "\nInstall mode:"
 echo "1) Automatic - Install everything without asking"
 echo "2) Interactive (default) - Confirm before each major step"
 echo "3) Install Oh-My-Zsh Only"
-echo "4) Install Oh My Posh with EDM115-newline theme"
+echo "4) Install Oh-My-Posh Theme Only"
 read -p "Choose [1/2/3/4] (default 2): " mode
 
 if [[ "$mode" == "3" ]]; then
@@ -38,69 +38,15 @@ if [[ "$mode" == "3" ]]; then
         echo "✅ Oh-My-Zsh already installed. Skipping."
     fi
     exit 0
-elif [[ "$mode" == "4" ]]; then
-    echo -e "\nInstalling Oh My Posh and EDM115-newline theme..."
-    install_oh_my_posh
-    exit 0
 fi
 
-if [[ -z "$mode" || "$mode" == "2" ]]; then
-    AUTO_MODE=false
-else
-    AUTO_MODE=true
-fi
-
-set -e
-
-prompt_yes_no() {
-    [[ "$AUTO_MODE" == "true" ]] && return 0
-    while true; do
-        read -p "$1 (y/n): " yn
-        case "$yn" in
-            [Yy]*) return 0 ;;
-            [Nn]*) return 1 ;;
-            *) echo "Please answer yes or no." ;;
-        esac
-    done
-}
-
-install_pacman_pkg() {
-    pkg="$1"
-    if pacman -Q "$pkg" &>/dev/null; then
-        echo "✅ $pkg is already installed. Skipping."
-    else
-        echo "⬇️ Installing $pkg..."
-        sudo pacman -S --noconfirm "$pkg"
-    fi
-}
-
-install_paru_pkg() {
-    pkg="$1"
-    if paru -Q "$pkg" &>/dev/null; then
-        echo "✅ $pkg is already installed (AUR). Skipping."
-    else
-        echo "⬇️ Installing $pkg (from AUR)..."
-        paru -S --noconfirm "$pkg"
-    fi
-}
-
-install_oh_my_posh() {
-    # Install Oh My Posh
-    if command -v oh-my-posh &>/dev/null; then
-        echo "✅ Oh My Posh already installed. Skipping."
-    else
-        echo "⬇️ Installing Oh My Posh..."
-        sudo pacman -S --noconfirm oh-my-posh
-    fi
-
-    # Create Oh My Posh config directory
+if [[ "$mode" == "4" ]]; then
+    echo -e "\nInstalling Oh-My-Posh Theme..."
     mkdir -p ~/.config/ohmyposh
-
-    # Write EDM115-newline.omp.json
-    echo "⬇️ Creating Oh My Posh theme: EDM115-newline.omp.json..."
-    cat > ~/.config/ohmyposh/EDM115-newline.omp.json << 'EOF'
+    cat << 'EOF' > ~/.config/ohmyposh/EDM115-newline.omp.json
 {
   "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
+
   "blocks": [
     {
       "type": "prompt",
@@ -202,15 +148,48 @@ install_oh_my_posh() {
   "final_space": true
 }
 EOF
+    echo "✅ Oh-My-Posh theme (EDM115-newline) installed at ~/.config/ohmyposh/EDM115-newline.omp.json"
+    exit 0
+fi
 
-    # Update .zshrc to use Oh My Posh
-    if grep -q "oh-my-posh" ~/.zshrc; then
-        echo "✅ Oh My Posh already configured in .zshrc. Skipping."
+if [[ -z "$mode" || "$mode" == "2" ]]; then
+    AUTO_MODE=false
+else
+    AUTO_MODE=true
+fi
+
+set -e
+
+prompt_yes_no() {
+    [[ "$AUTO_MODE" == "true" ]] && return 0
+    while true; do
+        read -p "$1 (y/n): " yn
+        case "$yn" in
+            [Yy]*) return 0 ;;
+            [Nn]*) return 1 ;;
+            *) echo "Please answer yes or no." ;;
+        esac
+    done
+}
+
+install_pacman_pkg() {
+    pkg="$1"
+    if pacman -Q "$pkg" &>/dev/null; then
+        echo "✅ $pkg is already installed. Skipping."
     else
-        echo "⬇️ Adding Oh My Posh initialization to .zshrc..."
-        echo 'eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/EDM115-newline.omp.json)"' >> ~/.zsh  ~/.zshrc
+        echo "⬇️ Installing $pkg..."
+        sudo pacman -S --noconfirm "$pkg"
     fi
-    echo "✅ Oh My Posh setup complete with EDM115-newline theme."
+}
+
+install_paru_pkg() {
+    pkg="$1"
+    if paru -Q "$pkg" &>/dev/null; then
+        echo "✅ $pkg is already installed (AUR). Skipping."
+    else
+        echo "⬇️ Installing $pkg (from AUR)..."
+        paru -S --noconfirm "$pkg"
+    fi
 }
 
 install_pacman_pkg git
@@ -299,13 +278,11 @@ else
     }
 fi
 
-# Updatehoflector (confirm loop)
+# Update mirrorlist with reflector (confirm loop)
 prompt_yes_no "Do you want to update the mirrorlist now?" && {
     while true; do
         sudo reflector --verbose --latest 10 --protocol https --sort rate --download-timeout 20 --save /etc/pacman.d/mirrorlist
-        echo -e "\n🔍 Current top 
-
-5 mirrors:"
+        echo -e "\n🔍 Current top 5 mirrors:"
         head -n 20 /etc/pacman.d/mirrorlist
 
         prompt_yes_no "Are you satisfied with this mirrorlist?" && break
