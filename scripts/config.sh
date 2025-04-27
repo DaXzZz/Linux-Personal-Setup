@@ -14,7 +14,7 @@ if [[ -z "${HOME:-}" ]]; then
 fi
 
 # Base project directory
-PROJECT_ROOT="${HOME}/Arch-Hyprland-Config"
+PROJECT_ROOT="${HOME}/Linux-Personal-Setup"
 
 # Directory paths
 TARGET_DIR="${PROJECT_ROOT}/config"
