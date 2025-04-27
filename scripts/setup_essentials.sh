@@ -130,7 +130,7 @@ prompt_yes_no "Do you want to configure Git (username, email, default branch)?" 
 # Update mirrorlist with reflector (confirm loop)
 prompt_yes_no "Do you want to update the mirrorlist now?" && {
     while true; do
-        sudo reflector --verbose --latest 10 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+        sudo reflector --verbose --latest 10 --protocol https --sort rate --timeout 20 --save /etc/pacman.d/mirrorlist
         echo -e "\n🔍 Current top 5 mirrors:"
         head -n 20 /etc/pacman.d/mirrorlist
 
