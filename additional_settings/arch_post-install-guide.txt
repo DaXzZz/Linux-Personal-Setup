@@ -80,7 +80,14 @@ After that, you can use cat filename as usual (under the hood, it's bat).
 ============================
 - Docker: Reboot after adding User to Group
 - Timeshift: Always create Snapshot before major updates
-- UFW: Set Allow rules for special services (e.g., SSH: ufw allow 22)
+- UFW: Set Allow rules for special services (e.g., SSH: sudo ufw allow 22)
+- UFW Reset and Allow All:
+  1. Reset: sudo ufw reset
+  2. Set Default Policies: 
+     sudo ufw default allow incoming
+     sudo ufw default allow outgoing
+  3. Enable UFW: sudo ufw enable
+- Note: sudo ufw reset will automatically disable UFW before resetting
 - Reflector Timeout: If Mirrorlist update fails, run:
   sudo reflector --country Thailand,Singapore --latest 15 --protocol https --sort score --download-timeout 15 --save /etc/pacman.d/mirrorlist
 
