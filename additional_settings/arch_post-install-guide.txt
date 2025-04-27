@@ -53,6 +53,20 @@ Arch Linux Post-Install Guide 🚀
 9️⃣ Clean Package Cache
 - Run: sudo pacman -Sc
 
+==============================
+📝 Using bat (instead of cat)
+==============================
+- Use bat to view the contents of a file with color and line numbers
+
+Example of usage:
+- bat filename
+
+Set an alias to use instead of cat:
+- echo "alias cat='bat'" >> ~/.bashrc
+- source ~/.bashrc
+
+After that, you can use cat filename as usual (under the hood, it's bat).
+
 ============================
 🔥 System Maintenance
 ============================
