@@ -105,7 +105,7 @@ if [[ "$mode" == "3" ]]; then
           },
           "leading_diamond": "\ue0b6",
           "trailing_diamond": "\ue0b4",
-          "template": "\ue725 ({{ url .UpstreamIcon .UpstreamURL }} {{ url .HEAD .UpstreamURL }}){{ if gt .Ahead 0 }}<#50fa7b> +{{ .Ahead }}</>{{ end }}{{ if gt .Behind 0 }}<#ff5555> -{{ .Behind }}</>{{ end }}{{ if .Working.Changed }}<#f8f8f2> \uf044 {{ .Working.String }}</>{{ end }}{{ if .Staging.Changed }}<#f8f8f2> \uf046 {{ .Staging.String }}</>{{ end }}",
+          "template": "\ue725 ({{ url .UpstreamIcon .UpstreamURL }} {{ url .HEAD .UpstreamURL }}){{ if gt .Ahead 0 }}<#282a36> +{{ .Ahead }}</>{{ end }}{{ if gt .Behind 0 }}<#ff5555> -{{ .Behind }}</>{{ end }}{{ if .Working.Changed }}<#282a36> \uf044 {{ .Working.String }}</>{{ end }}{{ if .Staging.Changed }}<#282a36> \uf046 {{ .Staging.String }}</>{{ end }}",
           "foreground": "#282a36",
           "background": "#ffb86c",
           "type": "git",
