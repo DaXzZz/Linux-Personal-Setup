@@ -44,6 +44,8 @@ alias hyprreload='hyprctl reload'
 alias updatemirror='sudo reflector --country Thailand,Singapore --latest 15 --protocol https --sort score --download-timeout 15 --save /etc/pacman.d/mirrorlist'
 alias useful='cat /home/ryu/Linux-Personal-Setup/cmd/cmd-list.txt'
 alias sw='/home/ryu/Linux-Personal-Setup/scripts/audio_toggle.sh'
+alias codex='code --disable-gpu --no-sandbox --ozone-platform=wayland'
+alias discord='discord --enable-features=UseOzonePlatform --ozone-platform=wayland --disable-gpu'
 alias cat='bat'
 
 
