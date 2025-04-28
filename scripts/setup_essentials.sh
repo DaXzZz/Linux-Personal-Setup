@@ -11,12 +11,12 @@ echo "  • Paru - AUR helper"
 echo "  • Starship - Modern shell prompt"
 echo "  • Fonts - For icons and UI display"
 echo "  • Full app suite (VSCode, Python, Node.js, etc.)"
-echo "  • Zsh Shell with Plugins"
-echo "  • Oh-My-Posh theme (optional)"
+echo "  • Oh-My-Posh theme"
 echo "==========================================================="
 
 read -p "Do you want to continue with the installation? (y/n): " confirm
-if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+if DIMENSION
+[[ ! "$confirm" =~ ^[Yy]$ ]]; then
     echo "Setup cancelled."
     exit 0
 fi
@@ -25,22 +25,11 @@ fi
 echo -e "\nInstall mode:"
 echo "1) Automatic - Install everything without asking"
 echo "2) Interactive (default) - Confirm before each major step"
-echo "3) Install Oh-My-Zsh Only"
-echo "4) Install Oh-My-Posh Theme Only"
+echo "3) Install Oh-My-Posh Theme Only"
+echo "4) Install Zsh Plugins Only"
 read -p "Choose [1/2/3/4] (default 2): " mode
 
 if [[ "$mode" == "3" ]]; then
-    echo -e "\nInstalling Zsh and Oh-My-Zsh..."
-    install_pacman_pkg zsh
-    if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-    else
-        echo "✅ Oh-My-Zsh already installed. Skipping."
-    fi
-    exit 0
-fi
-
-if [[ "$mode" == "4" ]]; then
     echo -e "\nInstalling Oh-My-Posh Theme..."
     mkdir -p ~/.config/ohmyposh
     cat << 'EOF' > ~/.config/ohmyposh/EDM115-newline.omp.json
@@ -151,6 +140,33 @@ EOF
     exit 0
 fi
 
+if [[ "$mode" == "4" ]]; then
+    echo -e "\nInstalling Zsh, Oh-My-Zsh, and additional plugins..."
+    # Install Zsh
+    if command -v zsh &>/dev/null; then
+        echo "✅ Zsh already installed. Skipping."
+    else
+        echo "⬇️ Installing zsh..."
+        sudo pacman -S --noconfirm zsh
+    fi
+    # Install Oh-My-Zsh
+    if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" --unattended
+    else
+        echo "✅ Oh-My-Zsh already installed. Skipping."
+    fi
+    # Install additional plugins
+    mkdir -p ~/.oh-my-zsh/custom/plugins
+    cd ~/.oh-my-zsh/custom/plugins
+    [[ -d zsh-autosuggestions ]] && echo "✅ zsh-autosuggestions already installed. Skipping." || git clone https://github.com/zsh-users/zsh-autosuggestions.git
+    [[ -d zsh-syntax-highlighting ]] && echo "✅ zsh-syntax-highlighting already installed. Skipping." || git clone https://github.com/zsh-users/zsh-syntax-highlighting.git
+    [[ -d zsh-completions ]] && echo "✅ zsh-completions already installed. Skipping." || git clone https://github.com/zsh-users/zsh-completions.git
+    [[ -d you-should-use ]] && echo "✅ you-should-use already installed. Skipping." || git clone https://github.com/MichaelAquilina/zsh-you-should-use.git
+    echo -e "\n✅ Zsh plugins installed. Please add the following to your ~/.zshrc:"
+    echo "plugins=(git archlinux zsh-autosuggestions zsh-syntax-highlighting zsh-completions you-should-use sudo command-not-found extract)"
+    exit 0
+fi
+
 if [[ -z "$mode" || "$mode" == "2" ]]; then
     AUTO_MODE=false
 else
@@ -205,20 +221,6 @@ else
     echo "✅ paru already installed. Skipping."
 fi
 
-# Check zsh
-if command -v zsh &>/dev/null; then
-    echo "✅ Zsh already installed. Skipping."
-else
-    prompt_yes_no "Install Zsh and Oh-My-Zsh?" && {
-        install_pacman_pkg zsh
-        if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-            sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-        else
-            echo "✅ Oh-My-Zsh already installed. Skipping."
-        fi
-    }
-fi
-
 # Check starship
 if command -v starship &>/dev/null; then
     echo "✅ Starship already installed. Skipping."
@@ -253,13 +255,6 @@ prompt_yes_no "Install core desktop apps & tools?" && {
         install_paru_pkg "$pkg"
     done
 }
-
-# Install ZSH extra plugins
-mkdir -p ~/.oh-my-zsh/custom/plugins
-cd ~/.oh-my-zsh/custom/plugins
-
-[[ -d zsh-completions ]] && echo "✅ zsh-completions already installed. Skipping." || git clone https://github.com/zsh-users/zsh-completions.git
-[[ -d you-should-use ]] && echo "✅ you-should-use already installed. Skipping." || git clone https://github.com/MichaelAquilina/zsh-you-should-use.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/you-should-use
 
 # Check current Git config
 git_username=$(git config --global --get user.name)
@@ -374,7 +369,7 @@ fi
 echo -e "\n✅ Setup complete!"
 echo "⚡ Please complete these manual steps (not fully automated):"
 echo "- Edit /etc/pacman.conf to enable ParallelDownloads and add ILoveCandy"
-echo "- Setup shell integration for Zoxide (add 'eval \"\$(zoxide init bash)\"' to ~/.bashrc or ~/.zshrc)"
+echo "- Setup shell integration for Zoxide (add 'eval \"\$(zoxide init bash)\"' to ~/.bashrc)"
 echo "- Create SSH Key if needed: ssh-keygen -t ed25519"
 echo "- Create Timeshift snapshot before major updates: timeshift --create"
 echo "- Review and fine-tune UFW firewall rules: ufw allow/deny <ports>"
