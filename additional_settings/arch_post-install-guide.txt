@@ -54,6 +54,20 @@ Arch Linux Post-Install Guide 🚀
 - Run: sudo pacman -Sc
 
 ==============================
+📝 GRUB Theme
+==============================
+
+1️⃣ Elegant-grub2-themes
+- git clone "https://github.com/vinceliuice/Elegant-grub2-themes.git
+- cd Elegant-grub2-themes
+- sudo ./install.sh -t mojave -p window -i left -c dark -s 1080p
+
+2️⃣ Vimix
+- git clone https://github.com/vinceliuice/grub2-themes.git
+- cd grub2-themes
+- ./install.sh
+
+==============================
 📝 Using bat (instead of cat)
 ==============================
 - Use bat to view the contents of a file with color and line numbers

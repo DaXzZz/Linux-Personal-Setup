@@ -43,8 +43,8 @@ GRUB_DISABLE_RECOVERY=true
 #GRUB_COLOR_HIGHLIGHT="light-cyan/blue"
 
 # Uncomment one of them for the gfx desired, a image background or a gfxtheme
-GRUB_BACKGROUND="/usr/share/grub/themes/vimix/background.jpg"
-GRUB_THEME="/usr/share/grub/themes/vimix/theme.txt"
+GRUB_BACKGROUND="/usr/share/grub/themes/Elegant-mojave-window-left-dark/background.jpg"
+GRUB_THEME="/usr/share/grub/themes/Elegant-mojave-window-left-dark/theme.txt"
 
 # Uncomment to get a beep at GRUB start
 #GRUB_INIT_TUNE="480 440 1"
