@@ -22,6 +22,7 @@ Arch Linux Post-Install Guide 🚀
 - Add ILoveCandy below ParallelDownloads
 
 2️⃣ Change Display Manager (Optional)
+- sudo pacman -S sddm
 - Disable GDM: sudo systemctl disable --now gdm
 - Enable SDDM: sudo systemctl enable --now sddm
 - Reboot: reboot
