@@ -15,17 +15,17 @@
         "break",
 
         // Title
-        // {
-        //     "type": "title",
-        //     "keyWidth": 10,
-        //     "format": "         {6}{7}{8}",
-        //     "keyColor": "white"
-        // },
-
         {
-            "type": "custom",
-            "format": "\u001b[37m         ryu@archlinux"
+            "type": "title",
+            "keyWidth": 10,
+            "format": "         {6}{7}{8}",
+            "keyColor": "white"
         },
+
+        // {
+        //     "type": "custom",
+        //     "format": "\u001b[37m         ryu@archlinux"
+        // },
         
 
         // ───── เส้นคั่น ─────
@@ -80,7 +80,7 @@
         // 🎨 สีวงกลม (white ทั้งหมด)
         {
             "type": "custom",
-            "format": "   \u001b[37m              "
+            "format": "   \u001b[37m               "
         },
 
         "break"
