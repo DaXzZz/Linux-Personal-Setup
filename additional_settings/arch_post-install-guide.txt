@@ -90,6 +90,13 @@ After that, you can use cat filename as usual (under the hood, it's bat).
 - Find Orphan Packages: sudo pacman -Qdt
 - Remove Orphan Packages: sudo pacman -Rns $(pacman -Qtdq)
 
+# wayland
+sudo mkdir -p /usr/share/wayland-sessions-backup && sudo find /usr/share/wayland-sessions -maxdepth 1 -type f -name '*.desktop' ! \( -name 'gnome.desktop' -o -name 'hyprland.desktop' \) -exec mv {} /usr/share/wayland-sessions-backup/ \;
+
+# xsessions
+sudo mkdir -p /usr/share/xsessions-backup && sudo find /usr/share/xsessions -maxdepth 1 -type f -name '*.desktop' ! \( -name 'gnome.desktop' -o -name 'gnome-xorg.desktop' \) -exec mv {} /usr/share/xsessions-backup/ \;
+
+
 ============================
 🛡️ Special Notes
 ============================

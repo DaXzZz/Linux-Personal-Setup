@@ -6,7 +6,7 @@ export ZSH="$HOME/.oh-my-zsh"
 # ─────────────────────────────
 # 🎨 Theme and Plugins
 # ─────────────────────────────
-ZSH_THEME="agnosterzak"
+#ZSH_THEME="agnosterzak"
 
 plugins=(
     git
@@ -14,7 +14,7 @@ plugins=(
     zsh-autosuggestions
     zsh-syntax-highlighting
     zsh-completions
-    you-should-use
+    zsh-you-should-use
     sudo
     command-not-found
     extract
@@ -25,8 +25,19 @@ source $ZSH/oh-my-zsh.sh
 # ─────────────────────────────
 # 🎮 Terminal Appearance
 # ─────────────────────────────
-#pokemon-colorscripts --no-title -s -r | fastfetch -c $HOME/.config/fastfetch/config-pokemon.jsonc --logo-type file-raw --logo-height 10 --logo-width 5 --logo -
-echo "" && fastfetch --logo /home/ryu/Linux-Personal-Setup/fastfetch/image/Seiichi_Samura_Portrait.jpg --logo-width 20 --logo-height 10 --logo-padding-left 3
+# =========== Pokemon Script ==============
+# pokemon-colorscripts --no-title -s -r | fastfetch -c $HOME/.config/fastfetch/config-pokemon.jsonc --logo-type file-raw --logo-height 10 --logo-width 5 --logo -
+
+# =========== My Own fastfetch =============
+echo "" && \
+fastfetch --config ~/.config/fastfetch/config-daxz.jsonc \
+  --logo ~/Linux-Personal-Setup/fastfetch/image/Seiichi_Samura_Portrait.png \
+  --logo-type file --logo-width 20 --logo-height 10 --logo-padding-left 3 \
+|| fastfetch --config ~/.config/fastfetch/config-daxz.jsonc \
+  --logo ~/.config/fastfetch/arch.png \
+  --logo-type file --logo-width 20 --logo-height 10 --logo-padding-left 3 \
+|| fastfetch --config ~/.config/fastfetch/config-daxz.jsonc
+
 
 # ─────────────────────────────
 # 📁 Aliases (Shortcuts)
@@ -48,7 +59,9 @@ alias sw='/home/ryu/Linux-Personal-Setup/scripts/audio_toggle.sh'
 alias codex='code --disable-gpu --no-sandbox --ozone-platform=wayland'
 alias discord='discord --enable-features=UseOzonePlatform --ozone-platform=wayland --disable-gpu'
 alias cat='bat'
-
+alias sddmtheme='ls /usr/share/sddm/themes/'
+alias logouth='hyprctl dispatch exit'
+alias logoutg='gnome-session-quit --logout --no-prompt'
 
 # ─────────────────────────────
 # 🔍 Fuzzy Finder (FZF)
@@ -68,3 +81,4 @@ setopt appendhistory
 # ─────────────────────────────
 #eval "$(starship init zsh)"
 eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/EDM115-newline.omp.json)"
+eval "$(zoxide init zsh)"
