@@ -257,8 +257,8 @@ prompt_yes_no "Install core desktop apps & tools?" && {
 }
 
 # Check current Git config
-git_username=$(git config --global --get user.name)
-git_email=$(git config --global --get user.email)
+git_username=$(git config --global --get user.name || true)
+git_email=$(git config --global --get user.email || true)
 
 if [[ -n "$git_username" && -n "$git_email" ]]; then
     echo -e "\n✅ Git is already configured as:"
