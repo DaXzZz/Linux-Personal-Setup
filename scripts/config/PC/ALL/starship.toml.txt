@@ -1,0 +1,98 @@
+# ======= 🌌 Minimal Cyberpunk Starship Prompt =======
+
+format = """
+[](#44475a)\
+$username\
+[](bg:#6272a4 fg:#44475a)\
+$directory\
+[](fg:#6272a4 bg:#bd93f9)\
+$git_branch\
+$git_status\
+[](fg:#bd93f9 bg:#ff79c6)\
+$cmd_duration\
+[](fg:#ff79c6 bg:none)\
+$status$jobs$shell$nodejs$rust$python$docker_context$package$time\
+\n$character"""
+
+# 👤 USERNAME
+[username]
+style_user = "bg:#44475a fg:#f8f8f2"
+format = '[ $user ]($style)'
+show_always = true
+
+# 📁 DIRECTORY
+[directory]
+style = "bg:#6272a4 fg:#f8f8f2"
+format = "[ $path ]($style)"
+truncation_length = 2
+truncate_to_repo = true
+
+# 🌿 GIT BRANCH
+[git_branch]
+style = "bg:#bd93f9 fg:#282a36"
+format = '[  $branch$git_status ]($style)'
+
+# 🔄 GIT STATUS 
+[git_status]
+style = "bg:#bd93f9 fg:#282a36"
+format = '([$all_status$ahead_behind]($style))'
+conflicted = "C"  # Conflict
+staged = "+"      # Staged
+modified = "*"    # Modified
+deleted = "-"     # Deleted
+renamed = "R"     # Renamed
+untracked = "?"   # Untracked
+stashed = "S"     # Stashed
+
+# ⌛ CMD DURATION
+[cmd_duration]
+min_time = 500
+style = "bg:#ff79c6 fg:#282a36"
+format = '[ ⏱ $duration ]($style)'
+
+# 🧾 STATUS (Exit Code)
+[status]
+#style = "bg:#ff5555 fg:#282a36"
+format = '[ ⚠️ $status ]($style) '
+disabled = false
+
+# ⚙️ JOBS
+[jobs]
+symbol = "⚙️ "
+format = "[$symbol$number]($style) "
+style = "bold blue"
+
+#  SHELL
+[shell]
+style = "dimmed cyan"
+format = "[  $indicator]($style) "
+
+# 📦 PACKAGE VERSION
+[package]
+format = "[📦 $version](208 bold) "
+
+# 🐳 DOCKER CONTEXT
+[docker_context]
+format = '[🐳 $context](blue bold) '
+only_with_files = true
+
+#  NODEJS
+[nodejs]
+format = "[  $version](bold green) "
+disabled = false
+
+# 🦀 RUST
+[rust]
+format = "[ 🦀 $version](bold red) "
+disabled = false
+
+#  PYTHON
+[python]
+format = "[  $version](bold yellow) "
+python_binary = "python3"
+disabled = false
+
+# ➤ PROMPT SYMBOL
+[character]
+success_symbol = "[➜](bold #50fa7b)"
+error_symbol = "[✗](bold #ff5555)"

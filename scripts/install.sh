@@ -1,4 +1,3 @@
-# install.sh
 #!/bin/bash
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -9,61 +8,43 @@ echo -e "\n========== ARCH HYPRLAND CONFIGURATION INSTALLER =========="
 echo "This utility will install your saved configurations from a backup folder."
 echo "=============================================================="
 
-# Recommend running setup_essentials.sh first
-echo -e "\n\u26a0\ufe0f  RECOMMENDED: Run 'setup_essentials.sh' before continuing."
+echo -e "\n⚠️  RECOMMENDED: Run 'setup_essentials.sh' before continuing."
 read -p "Have you already run setup_essentials.sh on this system? (y/n): " confirm_essentials
 if [[ ! "$confirm_essentials" =~ ^[Yy]$ ]]; then
-    echo "\ud83d\uded1 Please run setup_essentials.sh first, then rerun this script."
+    echo "🛑 Please run setup_essentials.sh first, then rerun this script."
     exit 1
 fi
 
-# Select source folder
-echo -e "\nSelect the backup folder to install from:"
-CONFIG_SUBFOLDERS=("PC" "Notebook" "Timestamped backup (from config_backups/)")
-PS3="choose > "
-select folder in "${CONFIG_SUBFOLDERS[@]}"; do
-    case "$REPLY" in
-        1|2)
-            INSTALL_SOURCE_FOLDER="$TARGET_DIR/$folder"
+# Default path: config/PC/ALL
+INSTALL_SOURCE_FOLDER="$SCRIPT_DIR/config/PC/ALL"
+mkdir -p "$INSTALL_SOURCE_FOLDER"
+
+# For UserSettings file only, ask the user
+CONFIG_SUBFOLDERS=("PC" "Notebook" "Create new folder")
+USERSETTINGS_FOLDER=""
+USERSETTINGS_FILE="UserSettings.conf.txt"
+
+if [[ -f "$SCRIPT_DIR/config/PC/ALL/$USERSETTINGS_FILE" ]]; then
+    echo -e "\n📌 Found $USERSETTINGS_FILE — where should this be installed from?"
+    PS3="choose > "
+    select folder in "${CONFIG_SUBFOLDERS[@]}"; do
+        if [[ "$folder" == "Create new folder" ]]; then
+            read -p "Enter folder name: " NEWFOLDER
+            USERSETTINGS_FOLDER="$SCRIPT_DIR/config/$NEWFOLDER"
             break
-            ;;
-        3)
-            echo -e "\nAvailable timestamped backups:"
-            BACKUP_FOLDERS=($(ls -1 "$BACKUP_DIR" 2>/dev/null | sort -r))
-            if [[ ${#BACKUP_FOLDERS[@]} -eq 0 ]]; then
-                echo "\u274c No timestamped backups found in $BACKUP_DIR"
-                exit 1
-            fi
-            select backup in "${BACKUP_FOLDERS[@]}"; do
-                if [[ -n "$backup" ]]; then
-                    RAW_BACKUP_PATH="$BACKUP_DIR/$backup"
-                    TEMP_INSTALL_FOLDER="${PROJECT_ROOT}/_temp_install"
-                    mkdir -p "$TEMP_INSTALL_FOLDER"
-                    rm -f "$TEMP_INSTALL_FOLDER"/*
-
-                    echo "\u23f3 Converting raw backup files to .txt format..."
-                    for FILE in "${!RESTORE_PATHS[@]}"; do
-                        SRC="$RAW_BACKUP_PATH/$(basename "${RESTORE_PATHS[$FILE]}")"
-                        DEST="$TEMP_INSTALL_FOLDER/${FILE}.txt"
-                        [[ -f "$SRC" ]] && cp "$SRC" "$DEST"
-                    done
-
-                    INSTALL_SOURCE_FOLDER="$TEMP_INSTALL_FOLDER"
-                    break 2
-                else
-                    echo "Invalid selection. Try again."
-                fi
-            done
-            ;;
-        *)
+        elif [[ -n "$folder" ]]; then
+            USERSETTINGS_FOLDER="$SCRIPT_DIR/config/$folder"
+            break
+        else
             echo "Invalid selection. Try again."
-            ;;
-    esac
-done
+        fi
+    done
+fi
 
-echo "\ud83d\udcc2 Using folder: $INSTALL_SOURCE_FOLDER"
+echo "📂 Using source folders:"
+echo "- Main configs: $INSTALL_SOURCE_FOLDER"
+[[ -n "$USERSETTINGS_FOLDER" ]] && echo "- UserSettings.conf.txt: $USERSETTINGS_FOLDER"
 
-# Ask for installation mode
 echo -e "\nSelect installation mode:"
 echo "1) Complete - Install all available configurations"
 echo "2) Selective - Choose which configurations to install"
@@ -75,15 +56,17 @@ case "$INSTALL_MODE" in
     *) echo "Invalid selection. Defaulting to complete installation."; INSTALL_TYPE="complete" ;;
 esac
 
+# Count available configs
 AVAILABLE_CONFIGS=0
 for FILE in "${!RESTORE_PATHS[@]}"; do
-  SRC="${INSTALL_SOURCE_FOLDER}/${FILE}.txt"
-  [[ -f "$SRC" ]] && AVAILABLE_CONFIGS=$((AVAILABLE_CONFIGS + 1))
+    SRC_MAIN="${INSTALL_SOURCE_FOLDER}/${FILE}.txt"
+    SRC_USER="${USERSETTINGS_FOLDER}/${FILE}.txt"
+    [[ -f "$SRC_MAIN" || -f "$SRC_USER" ]] && AVAILABLE_CONFIGS=$((AVAILABLE_CONFIGS + 1))
 done
 
 if [[ $AVAILABLE_CONFIGS -eq 0 ]]; then
-  echo "\u274c Error: No configuration files found in $INSTALL_SOURCE_FOLDER"
-  exit 1
+    echo "❌ No configuration files found."
+    exit 1
 fi
 
 read -p "This will install $AVAILABLE_CONFIGS configuration files. Continue? (y/n): " confirm
@@ -92,11 +75,11 @@ if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-# Generate timestamp and backup directory
+# Setup backup directory
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 TIMED_BACKUP_DIR="${BACKUP_DIR}/backup_${TIMESTAMP}"
 mkdir -p "$TIMED_BACKUP_DIR"
-echo -e "\n\ud83d\udcc1 Backup directory: $TIMED_BACKUP_DIR"
+echo -e "\n📁 Backup directory: $TIMED_BACKUP_DIR"
 
 files_installed=0
 files_backed_up=0
@@ -108,68 +91,75 @@ echo "Files to process: $AVAILABLE_CONFIGS"
 echo "-----------------------------------"
 
 for FILE in "${!RESTORE_PATHS[@]}"; do
-  SRC="${INSTALL_SOURCE_FOLDER}/${FILE}.txt"
-  DEST="${RESTORE_PATHS[$FILE]}"
+    DEST="${RESTORE_PATHS[$FILE]}"
+    SRC=""
 
-  if [[ ! -f "$SRC" ]]; then
-    files_missing=$((files_missing + 1))
-    continue
-  fi
+    # Determine source
+    if [[ "$FILE" == "UserSettings.conf" && -n "$USERSETTINGS_FOLDER" ]]; then
+        SRC="$USERSETTINGS_FOLDER/${FILE}.txt"
+    else
+        SRC="$INSTALL_SOURCE_FOLDER/${FILE}.txt"
+    fi
 
-  echo "Processing: ${FILE}.txt -> $DEST"
-
-  if [[ "$INSTALL_TYPE" == "selective" ]]; then
-    read -p "Install $FILE to $DEST? (y/n): " SELECT_FILE
-    if [[ ! "$SELECT_FILE" =~ ^[Yy]$ ]]; then
-        echo "\u23ed\ufe0f Skipped: $FILE"
-        files_skipped=$((files_skipped + 1))
-        echo "-----------------------------------"
+    if [[ ! -f "$SRC" ]]; then
+        files_missing=$((files_missing + 1))
         continue
     fi
-  fi
 
-  mkdir -p "$(dirname "$DEST")" 2>/dev/null || {
-    echo "\u26a0\ufe0f Failed to create directory: $(dirname "$DEST")"
-    echo "-----------------------------------"
-    continue
-  }
+    echo "Processing: ${FILE}.txt -> $DEST"
 
-  if [[ -f "$DEST" ]]; then
-    cp "$DEST" "$TIMED_BACKUP_DIR/$(basename "$DEST")" 2>/dev/null && {
-      echo "\ud83d\udd04 Backup of $(basename "$DEST") saved to $TIMED_BACKUP_DIR"
-      files_backed_up=$((files_backed_up + 1))
+    if [[ "$INSTALL_TYPE" == "selective" ]]; then
+        read -p "Install $FILE to $DEST? (y/n): " SELECT_FILE
+        if [[ ! "$SELECT_FILE" =~ ^[Yy]$ ]]; then
+            echo "⏭️ Skipped: $FILE"
+            files_skipped=$((files_skipped + 1))
+            echo "-----------------------------------"
+            continue
+        fi
+    fi
+
+    mkdir -p "$(dirname "$DEST")" 2>/dev/null || {
+        echo "⚠️ Failed to create directory: $(dirname "$DEST")"
+        echo "-----------------------------------"
+        continue
     }
-  fi
 
-  if [[ "$DEST" == /etc/* ]]; then
-    echo "\ud83d\udd27 Installing (sudo): ${FILE}.txt -> $DEST"
-    sudo cp -f "$SRC" "$DEST" 2>/dev/null
-    RESULT=$?
-  else
-    echo "\ud83d\udcc1 Installing: ${FILE}.txt -> $DEST"
-    cp -f "$SRC" "$DEST" 2>/dev/null
-    RESULT=$?
-  fi
+    if [[ -f "$DEST" ]]; then
+        cp "$DEST" "$TIMED_BACKUP_DIR/$(basename "$DEST")" 2>/dev/null && {
+            echo "🔄 Backup of $(basename "$DEST") saved to $TIMED_BACKUP_DIR"
+            files_backed_up=$((files_backed_up + 1))
+        }
+    fi
 
-  if [[ $RESULT -eq 0 ]]; then
-    echo "\u2705 Installed: $DEST"
-    files_installed=$((files_installed + 1))
-  else
-    echo "\u26a0\ufe0f Failed to install: $DEST"
-    files_skipped=$((files_skipped + 1))
-  fi
-  echo "-----------------------------------"
+    if [[ "$DEST" == /etc/* ]]; then
+        echo "🔧 Installing (sudo): ${FILE}.txt -> $DEST"
+        sudo cp -f "$SRC" "$DEST" 2>/dev/null
+        RESULT=$?
+    else
+        echo "📁 Installing: ${FILE}.txt -> $DEST"
+        cp -f "$SRC" "$DEST" 2>/dev/null
+        RESULT=$?
+    fi
+
+    if [[ $RESULT -eq 0 ]]; then
+        echo "✅ Installed: $DEST"
+        files_installed=$((files_installed + 1))
+    else
+        echo "⚠️ Failed to install: $DEST"
+        files_skipped=$((files_skipped + 1))
+    fi
+
+    echo "-----------------------------------"
 done
 
-# Summary
 echo -e "\n========== INSTALLATION SUMMARY =========="
-echo "\ud83d\udcca Statistics:"
+echo "📊 Statistics:"
 echo "   - Files installed: $files_installed"
 echo "   - Files backed up: $files_backed_up"
 echo "   - Files skipped: $files_skipped"
 echo "   - Files missing: $files_missing"
-echo -e "\n\ud83d\udcc0 Installed from: $INSTALL_SOURCE_FOLDER"
-echo "\ud83d\udee1\ufe0f  Backups saved to: $TIMED_BACKUP_DIR"
+echo -e "\n📂 Installed from: $INSTALL_SOURCE_FOLDER"
+echo "🛡️  Backups saved to: $TIMED_BACKUP_DIR"
 
 # GRUB
 echo -e "\nChecking GRUB config..."
@@ -177,17 +167,17 @@ if [[ -f "/etc/default/grub" && -f "${INSTALL_SOURCE_FOLDER}/grub.txt" ]]; then
   echo -e "\nGRUB configuration was updated."
   read -p "Do you want to regenerate GRUB config now? (y/n): " REPLY
   if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-    echo "\ud83d\udd04 Updating GRUB config..."
+    echo "🔄 Updating GRUB config..."
     if sudo grub-mkconfig -o /boot/grub/grub.cfg; then
-      echo "\u2705 GRUB config regenerated successfully."
+      echo "✅ GRUB config regenerated successfully."
     else
-      echo "\u26a0\ufe0f GRUB update failed, but other configs were installed successfully."
+      echo "⚠️ GRUB update failed, but other configs were installed successfully."
     fi
   else
-    echo "\u23ed\ufe0f Skipped GRUB regeneration."
+    echo "⏭️ Skipped GRUB regeneration."
     echo "Remember to run 'sudo grub-mkconfig -o /boot/grub/grub.cfg' manually."
   fi
 fi
 
-echo -e "\n\u2705 Installation complete!"
+echo -e "\n✅ Installation complete!"
 exit 0
