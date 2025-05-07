@@ -7,7 +7,17 @@ clear
 
 echo -e "\n========== ARCH HYPRLAND CONFIGURATION BACKUP =========="
 echo "This utility will back up your current config files into text format."
-echo "==========================================================="
+echo "===========================================================\n"
+
+# ========== Choose overwrite behavior ==========
+echo -e "🛡️  How do you want to handle existing .txt files?"
+echo "1) Overwrite all without asking"
+echo "2) Ask before each overwrite"
+read -p "choose > " OVERWRITE_MODE
+case "$OVERWRITE_MODE" in
+    1) FORCE_OVERWRITE=true ;;
+    *) FORCE_OVERWRITE=false ;;
+esac
 
 # ========== Choose target folder for UserSettings ==========
 USERSETTINGS_DEST=""
@@ -32,21 +42,47 @@ files_missing=0
 skipped_files=()
 missing_files=()
 
-echo -e "\n🗂️  Starting backup process..."
-echo "-----------------------------------"
+# ========== Backup: UserSettings Only ==========
+if [[ -n "$USERSETTINGS_DEST" ]]; then
+    echo -e "\n📤 Starting backup process (UserSettings)..."
+    FILE="UserSettings.conf"
+    SOURCE="${RESTORE_PATHS[$FILE]}"
+    DEST_FOLDER="$USERSETTINGS_DEST"
+    DEST_PATH="${DEST_FOLDER}/${FILE}.txt"
 
-# ========== Main backup loop ==========
+    if [[ ! -f "$SOURCE" ]]; then
+        echo "❌ File not found: $SOURCE"
+        files_missing=$((files_missing + 1))
+        missing_files+=("$FILE ← $SOURCE")
+    else
+        mkdir -p "$DEST_FOLDER"
+        if [[ -f "$DEST_PATH" && "$FORCE_OVERWRITE" == false ]]; then
+            read -p "⚠️  $FILE.txt already exists. Overwrite? (y/n): " OVERWRITE
+            if [[ ! "$OVERWRITE" =~ ^[Yy]$ ]]; then
+                echo "⏭️  Skipped: $FILE"
+                files_skipped=$((files_skipped + 1))
+                skipped_files+=("$FILE → $DEST_PATH")
+            else
+                cp -f "$SOURCE" "$DEST_PATH"
+                echo "✅ Saved: $DEST_PATH"
+                files_exported=$((files_exported + 1))
+            fi
+        else
+            cp -f "$SOURCE" "$DEST_PATH"
+            echo "✅ Saved: $DEST_PATH"
+            files_exported=$((files_exported + 1))
+        fi
+    fi
+fi
+
+# ========== Backup: All Other Files ==========
+echo -e "\n📤 Starting backup process (Main)..."
 for FILE in "${!RESTORE_PATHS[@]}"; do
+    [[ "$FILE" == "UserSettings.conf" ]] && continue
+
     SOURCE="${RESTORE_PATHS[$FILE]}"
     DEST_FOLDER="$INSTALL_SOURCE_MAIN"
-    DEST_FILENAME="${FILE}.txt"
-
-    # Special case for UserSettings: use user-selected folder
-    if [[ "$FILE" == "UserSettings.conf" && -n "$USERSETTINGS_DEST" ]]; then
-        DEST_FOLDER="$USERSETTINGS_DEST"
-    fi
-
-    DEST_PATH="${DEST_FOLDER}/${DEST_FILENAME}"
+    DEST_PATH="${DEST_FOLDER}/${FILE}.txt"
 
     if [[ ! -f "$SOURCE" ]]; then
         echo "❌ File not found: $SOURCE"
@@ -55,26 +91,20 @@ for FILE in "${!RESTORE_PATHS[@]}"; do
         continue
     fi
 
-    echo "📤 Exporting: $SOURCE → $DEST_PATH"
-
-    if [[ -f "$DEST_PATH" ]]; then
-        read -p "⚠️  $DEST_FILENAME already exists. Overwrite? (y/n): " OVERWRITE
+    mkdir -p "$DEST_FOLDER"
+    if [[ -f "$DEST_PATH" && "$FORCE_OVERWRITE" == false ]]; then
+        read -p "⚠️  $FILE.txt already exists. Overwrite? (y/n): " OVERWRITE
         if [[ ! "$OVERWRITE" =~ ^[Yy]$ ]]; then
-            echo "⏭️  Skipped: $DEST_FILENAME"
+            echo "⏭️  Skipped: $FILE"
             files_skipped=$((files_skipped + 1))
             skipped_files+=("$FILE → $DEST_PATH")
-            echo "-----------------------------------"
             continue
         fi
     fi
 
-    mkdir -p "$DEST_FOLDER"
-    cp -f "$SOURCE" "$DEST_PATH" && {
-        echo "✅ Saved: $DEST_PATH"
-        files_exported=$((files_exported + 1))
-    }
-
-    echo "-----------------------------------"
+    cp -f "$SOURCE" "$DEST_PATH"
+    echo "✅ Saved: $DEST_PATH"
+    files_exported=$((files_exported + 1))
 done
 
 # ========== Summary ==========
