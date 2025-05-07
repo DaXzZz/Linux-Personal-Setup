@@ -59,7 +59,7 @@ if [[ -n "$USERSETTINGS_DEST" ]]; then
         if [[ -f "$DEST_PATH" && "$FORCE_OVERWRITE" == false ]]; then
             read -p "⚠️  $FILE.txt already exists. Overwrite? (y/n): " OVERWRITE
             if [[ ! "$OVERWRITE" =~ ^[Yy]$ ]]; then
-                echo "⏭️ Skipped: $FILE"
+                echo "⏭️  Skipped: $FILE"
                 files_skipped=$((files_skipped + 1))
                 skipped_files+=("$FILE → $DEST_PATH")
             else
@@ -111,7 +111,7 @@ done
 echo -e "\n🧾 \033[1mBACKUP SUMMARY\033[0m"
 echo "────────────────────────────────────────────"
 printf "✅ %-20s : %d\n" "Files exported" "$files_exported"
-printf "⏭️  %-20s : %d\n" "Files skipped" "$files_skipped"
+printf "⏭️ %-20s : %d\n" "Files skipped" "$files_skipped"
 printf "❌ %-20s : %d\n" "Files missing" "$files_missing"
 echo "────────────────────────────────────────────"
 echo "📂 Main backup folder      : $INSTALL_SOURCE_MAIN"
