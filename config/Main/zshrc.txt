@@ -29,14 +29,13 @@ source $ZSH/oh-my-zsh.sh
 # pokemon-colorscripts --no-title -s -r | fastfetch -c $HOME/.config/fastfetch/config-pokemon.jsonc --logo-type file-raw --logo-height 10 --logo-width 5 --logo -
 
 # =========== My Own fastfetch =============
-echo "" && \
-fastfetch --config ~/.config/fastfetch/config-daxz.jsonc \
-  --logo ~/Linux-Personal-Setup/fastfetch/image/Seiichi_Samura_Portrait.png \
-  --logo-type file --logo-width 20 --logo-height 10 --logo-padding-left 3 \
-|| fastfetch --config ~/.config/fastfetch/config-daxz.jsonc \
-  --logo ~/.config/fastfetch/arch.png \
-  --logo-type file --logo-width 20 --logo-height 10 --logo-padding-left 3 \
-|| fastfetch --config ~/.config/fastfetch/config-daxz.jsonc
+if ps -e | grep -i "gnome-session" > /dev/null; then
+  # ถ้าอยู่บน GNOME ให้ใช้ Arch ASCII logo
+  echo "" && fastfetch --config ~/.config/fastfetch/config-daxz.jsonc --logo ascii:arch
+else
+  # ถ้าไม่ได้อยู่บน GNOME ให้ใช้รูปภาพตามเดิม
+  echo "" && fastfetch --config ~/.config/fastfetch/config-daxz.jsonc --logo /home/ryu/Linux-Personal-Setup/fastfetch/image/Seiichi_Samura_Portrait.jpg --logo-width 20 --logo-height 10 --logo-padding-left 3
+fi
 
 
 # ─────────────────────────────
