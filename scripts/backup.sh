@@ -59,7 +59,7 @@ if [[ -n "$USERSETTINGS_DEST" ]]; then
         if [[ -f "$DEST_PATH" && "$FORCE_OVERWRITE" == false ]]; then
             read -p "⚠️  $FILE.txt already exists. Overwrite? (y/n): " OVERWRITE
             if [[ ! "$OVERWRITE" =~ ^[Yy]$ ]]; then
-                echo "⏭️  Skipped: $FILE"
+                echo "⏭️ Skipped: $FILE"
                 files_skipped=$((files_skipped + 1))
                 skipped_files+=("$FILE → $DEST_PATH")
             else
