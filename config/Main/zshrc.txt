@@ -30,13 +30,10 @@ source $ZSH/oh-my-zsh.sh
 
 # =========== My Own fastfetch =============
 if ps -e | grep -i "gnome-session" > /dev/null; then
-  # ถ้าอยู่บน GNOME ให้ใช้ Arch ASCII logo
   echo "" && fastfetch --config ~/.config/fastfetch/config-daxz.jsonc --logo ascii:arch
 else
-  # ถ้าไม่ได้อยู่บน GNOME ให้ใช้รูปภาพตามเดิม
   echo "" && fastfetch --config ~/.config/fastfetch/config-daxz.jsonc --logo /home/ryu/Linux-Personal-Setup/fastfetch/image/Seiichi_Samura_Portrait.jpg --logo-width 20 --logo-height 10 --logo-padding-left 3
 fi
-
 
 # ─────────────────────────────
 # 📁 Aliases (Shortcuts)
@@ -61,6 +58,8 @@ alias cat='bat'
 alias sddmtheme='ls /usr/share/sddm/themes/'
 alias logouth='hyprctl dispatch exit'
 alias logoutg='gnome-session-quit --logout --no-prompt'
+alias cleanpkg="sudo pacman -Scc && paru -Sc"
+alias updategrub="sudo grub-mkconfig -o /boot/grub/grub.cfg"
 
 # ─────────────────────────────
 # 🔍 Fuzzy Finder (FZF)

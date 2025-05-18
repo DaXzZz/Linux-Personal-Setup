@@ -69,6 +69,15 @@ Arch Linux Post-Install Guide 🚀
 - ./install.sh
 
 ==============================
+📝 SDDM Theme
+==============================
+
+1️⃣ sddm-astronaut-theme
+- git clone https://github.com/Keyitdev/sddm-astronaut-theme.git
+- cd sddm-astronaut-theme
+- ./setup.sh
+
+==============================
 📝 Using bat (instead of cat)
 ==============================
 - Use bat to view the contents of a file with color and line numbers
