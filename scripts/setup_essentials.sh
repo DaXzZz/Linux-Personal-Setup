@@ -483,10 +483,6 @@ fi
 
 install_paru_if_needed
 
-if prompt_yes_no "Install Starship prompt?"; then
-    install_pacman_pkg starship
-fi
-
 if prompt_yes_no "Install Oh-My-Posh?"; then
     install_aur_pkg oh-my-posh-bin || warn "Oh-My-Posh install failed. You can retry later with: install_aur_direct oh-my-posh-bin"
 fi
@@ -500,7 +496,7 @@ if prompt_yes_no "Install fonts?"; then
         ttf-jetbrains-mono-nerd \
         noto-fonts \
         noto-fonts-emoji \
-        ttf-font-awesome
+        otf-font-awesome
 fi
 
 if prompt_yes_no "Install Zsh plugins?"; then
@@ -512,15 +508,13 @@ if prompt_yes_no "Install core desktop apps and tools?"; then
         p7zip unrar tar rsync git fastfetch htop nano exfatprogs ntfs-3g flac jasper aria2 curl wget \
         cmake clang imagemagick go timeshift btop zoxide firefox vlc gimp qt6-multimedia-ffmpeg krita thunderbird \
         trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat ufw gufw reflector \
-        docker docker-compose github-cli
+        docker docker-compose github-cli discord telegram-desktop
 
     # AUR packages are optional. Failures should not stop the whole setup.
     for pkg in \
         preload \
         libreoffice-fresh \
         pamac-gtk \
-        discord \
-        telegram-desktop \
         postman-bin \
         visual-studio-code-bin \
         archlinux-tweak-tool-git; do
@@ -573,8 +567,6 @@ ok "Setup complete."
 echo "Manual notes:"
 echo "- For zoxide in zsh, add this to ~/.zshrc:"
 echo '  eval "$(zoxide init zsh)"'
-echo "- For starship in zsh, add this to ~/.zshrc:"
-echo '  eval "$(starship init zsh)"'
 echo "- For oh-my-posh in zsh, add this to ~/.zshrc if you want to use the custom theme:"
 echo '  eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/EDM115-newline.omp.json)"'
 echo "- Create SSH key if needed:"

@@ -1,71 +1,78 @@
-#!/bin/bash
-
-# Add stricter error handling
+#!/usr/bin/env bash
 set -euo pipefail
 
-# Partial name match (more flexible)
-HEADSET_KEY="PRO X Wireless"
-BUILTIN_KEY="Built-in Audio"
+HEADSET_KEY="PRO X Wireless Gaming Headset Analog Stereo"
+BUILTIN_KEY="Built-in Audio Analog Stereo"
 
-# Fallback IDs (used when one sink disappears)
-FALLBACK_HEADSET_ID=73
-FALLBACK_BUILTIN_ID=45
-
-# Function to log errors and exit
 error_exit() {
     local message="$1"
     echo "❌ Error: $message" >&2
-    notify-send "Audio Toggle Error" "$message"
+    notify-send "Audio Toggle Error" "$message" 2>/dev/null || true
     exit 1
 }
 
-# Function to log success
 log_success() {
     local message="$1"
     echo "$message"
-    notify-send "Audio Output" "$message"
+    notify-send "Audio Output" "$message" 2>/dev/null || true
 }
 
-# Extract sink list - use || true to prevent script from exiting if grep fails
-SINKS=$(wpctl status | awk '
-  /Sinks:/ { capture = 1; next }
-  /^[[:space:]]*├─|^[[:space:]]*└─/ { capture = 0 }
-  capture {
-    gsub(/[│*]/, "")
-    if ($1 ~ /^[0-9]+\.$/) print
-  }
-' || error_exit "Failed to get audio sinks")
+command -v wpctl >/dev/null 2>&1 || error_exit "wpctl not found"
+command -v awk >/dev/null 2>&1 || error_exit "awk not found"
 
-# Try to get sink IDs by name
-HEADSET_ID=$(echo "$SINKS" | grep -i "$HEADSET_KEY" | awk '{print $1}' | tr -d '.' || true)
-BUILTIN_ID=$(echo "$SINKS" | grep -i "$BUILTIN_KEY" | awk '{print $1}' | tr -d '.' || true)
+SINKS="$(
+    wpctl status | awk '
+    /Sinks:/ { capture = 1; next }
+    /^[[:space:]]*├─|^[[:space:]]*└─/ { capture = 0 }
+    capture {
+        gsub(/[│*]/, "")
+        if ($1 ~ /^[0-9]+\.$/) print
+    }'
+)"
 
-# Fallback to known static IDs
-[[ -z "$HEADSET_ID" ]] && HEADSET_ID=$FALLBACK_HEADSET_ID
-[[ -z "$BUILTIN_ID" ]] && BUILTIN_ID=$FALLBACK_BUILTIN_ID
+[[ -n "$SINKS" ]] || error_exit "No audio sinks found"
 
-# Validate that we have usable IDs
-[[ -z "$HEADSET_ID" ]] && error_exit "Could not find headset audio device"
-[[ -z "$BUILTIN_ID" ]] && error_exit "Could not find built-in audio device"
+HEADSET_ID="$(
+    echo "$SINKS" | awk -v key="$HEADSET_KEY" '
+    BEGIN { IGNORECASE = 1 }
+    index($0, key) { gsub(/\./, "", $1); print $1; exit }
+    '
+)"
 
-# Get current default sink (robust) - use || true to prevent script from exiting if grep fails
-CURRENT_SINK=$(wpctl status | grep -A5 "Sinks:" | grep '\*' | grep -oP '\*\s+\K[0-9]+' || true)
+BUILTIN_ID="$(
+    echo "$SINKS" | awk -v key="$BUILTIN_KEY" '
+    BEGIN { IGNORECASE = 1 }
+    index($0, key) { gsub(/\./, "", $1); print $1; exit }
+    '
+)"
 
+[[ -n "$HEADSET_ID" ]] || error_exit "Could not find headset sink: $HEADSET_KEY"
+[[ -n "$BUILTIN_ID" ]] || error_exit "Could not find built-in sink: $BUILTIN_KEY"
+
+CURRENT_SINK="$(
+    echo "$SINKS" | awk '
+    /^\s*[0-9]+\./ && index($0, "*") {
+        gsub(/[.*]/, "", $1)
+        print $1
+        exit
+    }'
+)"
+
+# Fallback: wpctl inspect @DEFAULT_AUDIO_SINK@
 if [[ -z "$CURRENT_SINK" ]]; then
-    error_exit "Could not determine current sink."
+    CURRENT_SINK="$(
+        wpctl inspect @DEFAULT_AUDIO_SINK@ 2>/dev/null |
+        awk -F' = ' '/object.id/ {print $2; exit}' |
+        tr -d '"'
+    )"
 fi
 
-# Toggle
+[[ -n "$CURRENT_SINK" ]] || error_exit "Could not determine current default sink"
+
 if [[ "$CURRENT_SINK" == "$HEADSET_ID" ]]; then
-    if ! wpctl set-default "$BUILTIN_ID"; then
-        error_exit "Failed to switch to Built-in Audio"
-    fi
+    wpctl set-default "$BUILTIN_ID" || error_exit "Failed to switch to Built-in Audio"
     log_success "🔊 Switched to Built-in Audio"
 else
-    if ! wpctl set-default "$HEADSET_ID"; then
-        error_exit "Failed to switch to PRO X Headset"
-    fi
+    wpctl set-default "$HEADSET_ID" || error_exit "Failed to switch to PRO X Headset"
     log_success "🎧 Switched to PRO X Headset"
 fi
-
-exit 0

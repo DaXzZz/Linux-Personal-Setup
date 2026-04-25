@@ -1,35 +1,45 @@
 #!/bin/bash
-
 set -euo pipefail
 
-# ========== Project Structure ==========
+# ==================================================
+# 📁 PROJECT STRUCTURE
+# ==================================================
 PROJECT_ROOT="${HOME}/Linux-Personal-Setup"
 
-# Main directories used in the project
-TARGET_DIR="${PROJECT_ROOT}/config"            # Stores config files categorized by device (e.g. PC, Notebook, Main)
-SCRIPTS_DIR="${PROJECT_ROOT}/scripts"          # Stores utility scripts
-BACKUP_DIR="${PROJECT_ROOT}/backup"            # Stores manual/user-confirmed backup copies
+TARGET_DIR="${PROJECT_ROOT}/config"
+SCRIPTS_DIR="${PROJECT_ROOT}/scripts"
+BACKUP_DIR="${PROJECT_ROOT}/backup"
 
-# Where main config .txt files (to install) are loaded from
 INSTALL_SOURCE_MAIN="${TARGET_DIR}/Main"
 
-# Filename used only for UserSettings config
-USERSETTINGS_FILENAME="UserSettings.conf.txt"
+SYSTEM_SETTINGS_FILENAME="SystemSettings.conf.txt"
 
-# ========== File Paths to Manage ==========
-# These are the actual target locations on the system where configs should be restored to
+
+# ==================================================
+# 📦 RESTORE TARGET PATHS
+# ==================================================
+# Mapping: [source filename] -> [destination path]
+
 declare -A RESTORE_PATHS=(
+  # Shell
   [zshrc]="${HOME}/.zshrc"
-  [starship.toml]="${HOME}/.config/starship.toml"
+
+  # Terminal
   [kitty.conf]="${HOME}/.config/kitty/kitty.conf"
-  [config.jsonc]="${HOME}/.config/fastfetch/config.jsonc"
-  [WindowRules.conf]="${HOME}/.config/hypr/UserConfigs/WindowRules.conf"
-  [Startup_Apps.conf]="${HOME}/.config/hypr/UserConfigs/Startup_Apps.conf"
-  [UserSettings.conf]="${HOME}/.config/hypr/UserConfigs/UserSettings.conf"
+
+  # Prompt
+  [EDM115-newline.omp.json]="${HOME}/.config/ohmyposh/EDM115-newline.omp.json"
+
+  # Hyprland
+  [SystemSettings.conf]="${HOME}/.config/hypr/configs/SystemSettings.conf"
   [UserDecorations.conf]="${HOME}/.config/hypr/UserConfigs/UserDecorations.conf"
 )
 
-# Create required directories if they don't exist
+
+# ==================================================
+# 🛠️ INITIAL SETUP
+# ==================================================
+
 for dir in "$TARGET_DIR" "$SCRIPTS_DIR" "$BACKUP_DIR"; do
     mkdir -p "$dir"
 done
