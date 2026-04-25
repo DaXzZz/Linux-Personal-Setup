@@ -11,40 +11,23 @@
 #   - Uses AUR only for packages that normally require AUR.
 #   - Falls back to direct AUR git clone + makepkg if paru fails.
 #   - Optional AUR package failures do not stop the whole setup.
-#   - preload and pamac are excluded by default because they often cause issues on Arch.
+#   - preload, pamac, archlinux-tweak-tool-git, and GRUB changes are excluded.
 #
 
 set -Eeuo pipefail
-
-# -----------------------------
-# Helpers
-# -----------------------------
 
 info() { echo -e "\n==> $*"; }
 ok() { echo "✅ $*"; }
 warn() { echo "⚠️  $*"; }
 err() { echo "❌ $*" >&2; }
 
-run_sudo() {
-    sudo "$@"
-}
-
-have_cmd() {
-    command -v "$1" &>/dev/null
-}
-
-pkg_installed() {
-    pacman -Q "$1" &>/dev/null
-}
-
-aur_clone_url() {
-    local pkg="$1"
-    echo "https://aur.archlinux.org/${pkg}.git"
-}
+run_sudo() { sudo "$@"; }
+have_cmd() { command -v "$1" &>/dev/null; }
+pkg_installed() { pacman -Q "$1" &>/dev/null; }
+aur_clone_url() { echo "https://aur.archlinux.org/${1}.git"; }
 
 prompt_yes_no() {
     local question="$1"
-
     if [[ "${AUTO_MODE:-false}" == "true" ]]; then
         return 0
     fi
@@ -126,7 +109,6 @@ install_aur_pkg() {
         if paru -S --needed --noconfirm "$pkg"; then
             return 0
         fi
-
         warn "paru failed for $pkg. Falling back to direct AUR git + makepkg."
     else
         warn "paru not found. Falling back to direct AUR git + makepkg for $pkg."
@@ -414,7 +396,7 @@ install_zsh_plugins() {
 
     echo
     ok "Zsh plugins installed."
-    echo "Use this in ~/.zshrc:"
+    echo 'Use this in ~/.zshrc:'
     echo 'plugins=(git archlinux zsh-autosuggestions zsh-syntax-highlighting zsh-completions you-should-use sudo command-not-found extract)'
 }
 
@@ -504,22 +486,6 @@ update_mirrorlist_if_requested() {
     run_sudo pacman -Syyu --noconfirm
 }
 
-install_problematic_optional_packages() {
-    if ! prompt_yes_no "Install experimental/problematic optional packages? (preload, pamac-aur)"; then
-        return 0
-    fi
-
-    warn "preload and pamac are not installed by default because they often break or are unnecessary on Arch."
-
-    if prompt_yes_no "Install preload?"; then
-        install_aur_pkg_optional preload
-    fi
-
-    if prompt_yes_no "Install pamac-aur?"; then
-        install_aur_pkg_optional pamac-aur
-    fi
-}
-
 final_checklist() {
     echo
     info "Final checklist"
@@ -553,19 +519,12 @@ final_checklist() {
         warn "User '$USER' is not in docker group."
     fi
 
-    echo "▶️ GRUB config:"
-    [[ -f /boot/grub/grub.cfg ]] && ok "GRUB config exists." || warn "GRUB config not found."
-
     if (( ${#FAILED_AUR_PACKAGES[@]} > 0 )); then
         echo
         warn "Some optional AUR packages failed or were skipped:"
         printf ' - %s\n' "${FAILED_AUR_PACKAGES[@]}"
     fi
 }
-
-# -----------------------------
-# Main
-# -----------------------------
 
 FAILED_AUR_PACKAGES=()
 
@@ -609,7 +568,6 @@ case "${mode:-2}" in
         ;;
 esac
 
-# Make git more tolerant on networks where HTTP/2/TLS is unstable.
 git config --global http.version HTTP/1.1 || true
 
 install_pacman_pkgs git base-devel ca-certificates curl openssl
@@ -647,27 +605,15 @@ if prompt_yes_no "Install core desktop apps and tools?"; then
         trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat ufw gufw reflector \
         docker docker-compose github-cli discord telegram-desktop
 
-    # AUR-only optional packages.
-    # preload and pamac are intentionally excluded from default install.
     for pkg in \
         postman-bin \
-        visual-studio-code-bin \
-        archlinux-tweak-tool-git; do
+        visual-studio-code-bin; do
         install_aur_pkg_optional "$pkg"
     done
 fi
 
 configure_git_if_needed
 update_mirrorlist_if_requested
-install_problematic_optional_packages
-
-if prompt_yes_no "Update GRUB config?"; then
-    if have_cmd grub-mkconfig; then
-        run_sudo grub-mkconfig -o /boot/grub/grub.cfg
-    else
-        warn "grub-mkconfig not found. Skipping."
-    fi
-fi
 
 if prompt_yes_no "Enable UFW firewall?"; then
     install_pacman_pkg ufw
