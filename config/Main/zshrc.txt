@@ -1,12 +1,13 @@
 # ─────────────────────────────
-# 🌟 Environment Setup
+# Environment
 # ─────────────────────────────
 export ZSH="$HOME/.oh-my-zsh"
+export PATH="$PATH:$HOME/.local/bin"
 
 # ─────────────────────────────
-# 🎨 Theme and Plugins
+# Theme and Plugins
 # ─────────────────────────────
-#ZSH_THEME="agnosterzak"
+ZSH_THEME="agnosterzak"
 
 plugins=(
     git
@@ -20,63 +21,72 @@ plugins=(
     extract
 )
 
-source $ZSH/oh-my-zsh.sh
+source "$ZSH/oh-my-zsh.sh"
 
 # ─────────────────────────────
-# 🎮 Terminal Appearance
+# Terminal Appearance
 # ─────────────────────────────
-# =========== Pokemon Script ==============
-# pokemon-colorscripts --no-title -s -r | fastfetch -c $HOME/.config/fastfetch/config-pokemon.jsonc --logo-type file-raw --logo-height 10 --logo-width 5 --logo -
 
-# =========== My Own fastfetch =============
+# Pokemon fastfetch
+# pokemon-colorscripts --no-title -s -r | fastfetch -c "$HOME/.config/fastfetch/config-pokemon.jsonc" --logo-type file-raw --logo-height 10 --logo-width 5 --logo -
+
+# Custom fastfetch
 if ps -e | grep -i "gnome-session" > /dev/null; then
-  echo "" && fastfetch --config ~/.config/fastfetch/config-daxz.jsonc --logo ascii:arch
+  echo ""
+  fastfetch --config "$HOME/.config/fastfetch/config-daxz.jsonc" --logo ascii:arch
 else
-  echo "" && fastfetch --config ~/.config/fastfetch/config-daxz.jsonc --logo /home/ryu/Linux-Personal-Setup/fastfetch/image/Seiichi_Samura_Portrait.jpg --logo-width 20 --logo-height 10 --logo-padding-left 3
+  echo ""
+  fastfetch --config "$HOME/.config/fastfetch/config-daxz.jsonc" --logo "$HOME/Linux-Personal-Setup/fastfetch/image/Seiichi_Samura_Portrait.jpg" --logo-width 20 --logo-height 10 --logo-padding-left 3
 fi
 
 # ─────────────────────────────
-# 📁 Aliases (Shortcuts)
+# Aliases
 # ─────────────────────────────
 alias ls='lsd'
 alias l='ls -l'
 alias la='ls -a'
 alias lla='ls -la'
 alias lt='ls --tree'
+
 alias update='sudo pacman -Syu && paru -Syu'
-alias cleanup='sudo pacman -Rns $(pacman -Qtdq) && sudo pacman -Sc'
+alias cleanup='orphans=$(pacman -Qdtq); [ -n "$orphans" ] && sudo pacman -Rns $orphans; sudo pacman -Sc'
+alias cleanpkg='sudo pacman -Scc && paru -Sc'
+
 alias c='clear'
 alias v='nvim'
+alias cat='bat'
+
 alias hyprconf='nano ~/.config/hypr/hyprland.conf'
 alias hyprreload='hyprctl reload'
-alias updatemirror='sudo reflector --country Thailand,Singapore --latest 15 --protocol https --sort score --download-timeout 15 --save /etc/pacman.d/mirrorlist'
-alias useful='cat /home/ryu/Linux-Personal-Setup/cmd/cmd-list.txt'
-alias sw='/home/ryu/Linux-Personal-Setup/scripts/audio_toggle.sh'
-alias codex='code --disable-gpu --no-sandbox --ozone-platform=wayland'
-alias discord='discord --enable-features=UseOzonePlatform --ozone-platform=wayland --disable-gpu'
-alias cat='bat'
-alias sddmtheme='ls /usr/share/sddm/themes/'
 alias logouth='hyprctl dispatch exit'
 alias logoutg='gnome-session-quit --logout --no-prompt'
-alias cleanpkg="sudo pacman -Scc && paru -Sc"
-alias updategrub="sudo grub-mkconfig -o /boot/grub/grub.cfg"
+
+alias updatemirror='sudo reflector --country Thailand,Singapore --latest 15 --protocol https --sort score --download-timeout 15 --save /etc/pacman.d/mirrorlist'
+
+alias useful='cat "$HOME/Linux-Personal-Setup/cmd/cmd-list.txt"'
+alias sw='"$HOME/Linux-Personal-Setup/scripts/audio_toggle.sh"'
+
+alias codex='code --disable-gpu --no-sandbox --ozone-platform=wayland'
+alias discord='discord --enable-features=UseOzonePlatform --ozone-platform=wayland --disable-gpu'
+
+alias sddmtheme='ls /usr/share/sddm/themes/'
+alias updategrub='sudo grub-mkconfig -o /boot/grub/grub.cfg'
 
 # ─────────────────────────────
-# 🔍 Fuzzy Finder (FZF)
+# FZF
 # ─────────────────────────────
 source <(fzf --zsh)
 
 # ─────────────────────────────
-# 🧠 Zsh History Settings
+# Zsh History
 # ─────────────────────────────
-HISTFILE=~/.zsh_history
+HISTFILE="$HOME/.zsh_history"
 HISTSIZE=10000
 SAVEHIST=10000
 setopt appendhistory
 
 # ─────────────────────────────
-# 🚀 Starship Prompt & Default Theme
+# Prompt / Tools
 # ─────────────────────────────
-#eval "$(starship init zsh)"
-eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/EDM115-newline.omp.json)"
+eval "$(oh-my-posh init zsh --config "$HOME/.config/ohmyposh/EDM115-newline.omp.json")"
 eval "$(zoxide init zsh)"
