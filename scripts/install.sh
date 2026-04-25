@@ -1,21 +1,14 @@
 #!/bin/bash
 set -euo pipefail
 
-# Load project paths and config definitions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/config.sh"
 clear
 
-# ==================================================
-# 🚀 WELCOME
-# ==================================================
 echo -e "\n========== ARCH HYPRLAND CONFIGURATION INSTALLER =========="
 echo "This utility installs saved configurations from your project config folder."
 echo "============================================================"
 
-# ==================================================
-# ✅ PREREQUISITE CHECK
-# ==================================================
 echo -e "\n⚠️  RECOMMENDED: Run 'setup_essentials.sh' before continuing."
 read -r -p "Have you already run setup_essentials.sh on this system? (y/n): " confirm_essentials
 
@@ -24,9 +17,6 @@ if [[ ! "$confirm_essentials" =~ ^[Yy]$ ]]; then
     exit 1
 fi
 
-# ==================================================
-# 📂 SOURCE SELECTION
-# ==================================================
 SYSTEMSETTINGS_FOLDER=""
 
 mapfile -t AVAILABLE_FOLDERS < <(
@@ -57,9 +47,6 @@ echo "📂 Using source folders:"
 echo "- Main configs: $INSTALL_SOURCE_MAIN"
 [[ -n "$SYSTEMSETTINGS_FOLDER" ]] && echo "- SystemSettings.conf.txt: $SYSTEMSETTINGS_FOLDER"
 
-# ==================================================
-# ⚙️ INSTALL MODE
-# ==================================================
 echo -e "\nSelect installation mode:"
 echo "1) Complete - Install all available configurations"
 echo "2) Selective - Choose which configurations to install"
@@ -80,17 +67,21 @@ case "$INSTALL_MODE" in
         ;;
 esac
 
-# ==================================================
-# 🔎 COUNT AVAILABLE CONFIGS
-# ==================================================
+get_source_path() {
+    local file="$1"
+
+    if [[ "$file" == "SystemSettings.conf" && -n "$SYSTEMSETTINGS_FOLDER" ]]; then
+        echo "$SYSTEMSETTINGS_FOLDER/$SYSTEM_SETTINGS_FILENAME"
+    else
+        echo "$INSTALL_SOURCE_MAIN/${file}.txt"
+    fi
+}
+
 AVAILABLE_CONFIGS=0
 
 for FILE in "${!RESTORE_PATHS[@]}"; do
-    if [[ "$FILE" == "SystemSettings.conf" && -n "$SYSTEMSETTINGS_FOLDER" ]]; then
-        [[ -f "$SYSTEMSETTINGS_FOLDER/$SYSTEM_SETTINGS_FILENAME" ]] && AVAILABLE_CONFIGS=$((AVAILABLE_CONFIGS + 1))
-    else
-        [[ -f "$INSTALL_SOURCE_MAIN/${FILE}.txt" ]] && AVAILABLE_CONFIGS=$((AVAILABLE_CONFIGS + 1))
-    fi
+    SRC="$(get_source_path "$FILE")"
+    [[ -f "$SRC" ]] && AVAILABLE_CONFIGS=$((AVAILABLE_CONFIGS + 1))
 done
 
 if [[ $AVAILABLE_CONFIGS -eq 0 ]]; then
@@ -105,9 +96,6 @@ if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-# ==================================================
-# 🛡️ BACKUP OPTION
-# ==================================================
 read -r -p "📦 Do you want to back up existing files before installing? (y/n): " DO_BACKUP
 
 if [[ "$DO_BACKUP" =~ ^[Yy]$ ]]; then
@@ -120,9 +108,6 @@ else
     echo -e "\n📁 Skipping backup."
 fi
 
-# ==================================================
-# 📊 TRACKING
-# ==================================================
 files_installed=0
 files_backed_up=0
 files_missing=0
@@ -135,18 +120,9 @@ echo -e "\n🚀 Starting installation process..."
 echo "Files to process: $AVAILABLE_CONFIGS"
 echo "-----------------------------------"
 
-# ==================================================
-# 📦 INSTALL LOOP
-# ==================================================
 for FILE in "${!RESTORE_PATHS[@]}"; do
     DEST="${RESTORE_PATHS[$FILE]}"
-    SRC=""
-
-    if [[ "$FILE" == "SystemSettings.conf" && -n "$SYSTEMSETTINGS_FOLDER" ]]; then
-        SRC="$SYSTEMSETTINGS_FOLDER/$SYSTEM_SETTINGS_FILENAME"
-    else
-        SRC="$INSTALL_SOURCE_MAIN/${FILE}.txt"
-    fi
+    SRC="$(get_source_path "$FILE")"
 
     if [[ ! -f "$SRC" ]]; then
         echo "❌ File not found: $SRC"
@@ -197,9 +173,6 @@ for FILE in "${!RESTORE_PATHS[@]}"; do
     echo "-----------------------------------"
 done
 
-# ==================================================
-# 🧾 SUMMARY
-# ==================================================
 echo -e "\n🧾 \033[1mINSTALLATION SUMMARY\033[0m"
 echo "────────────────────────────────────────────"
 printf "✅ %-20s : %d\n" "Files installed" "$files_installed"
