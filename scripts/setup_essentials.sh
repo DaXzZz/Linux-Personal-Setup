@@ -3,15 +3,15 @@
 # ESSENTIAL SETUP SCRIPT
 # ======================
 # PURPOSE:
-#   Prepare Arch Linux with core tools for Hyprland / JaKooLit-style configs.
+#   Prepare Arch Linux with core tools for Hyprland / KoolDots / JaKooLit-style configs.
 #
-# Improvements:
-#   - Fixes broken "DIMENSION" line.
-#   - Uses safer bash settings.
-#   - Supports paru, but falls back to direct AUR git clone + makepkg when paru RPC fails.
-#   - Uses oh-my-posh-bin instead of oh-my-posh to avoid building Go package from source.
-#   - Does not hard-fail the whole setup if one optional AUR package fails.
-#   - Enables services only when the package/service exists.
+# Notes:
+#   - Uses oh-my-posh-bin instead of building oh-my-posh from source.
+#   - Uses pacman for packages available in official Arch repos.
+#   - Uses AUR only for packages that normally require AUR.
+#   - Falls back to direct AUR git clone + makepkg if paru fails.
+#   - Optional AUR package failures do not stop the whole setup.
+#   - preload and pamac are excluded by default because they often cause issues on Arch.
 #
 
 set -Eeuo pipefail
@@ -44,6 +44,7 @@ aur_clone_url() {
 
 prompt_yes_no() {
     local question="$1"
+
     if [[ "${AUTO_MODE:-false}" == "true" ]]; then
         return 0
     fi
@@ -76,10 +77,10 @@ install_pacman_pkgs() {
     local missing=()
 
     for pkg in "${pkgs[@]}"; do
-        if ! pkg_installed "$pkg"; then
-            missing+=("$pkg")
-        else
+        if pkg_installed "$pkg"; then
             ok "$pkg is already installed. Skipping."
+        else
+            missing+=("$pkg")
         fi
     done
 
@@ -167,63 +168,163 @@ write_oh_my_posh_theme() {
       "alignment": "left",
       "segments": [
         {
-          "properties": { "cache_duration": "none" },
-          "template": "\n\u256d\u2500",
+          "template": "\n╭─",
           "foreground": "#f8f8f2",
           "type": "text",
           "style": "plain"
         },
         {
-          "properties": { "cache_duration": "none" },
-          "leading_diamond": "\ue0b6",
+          "leading_diamond": "",
           "template": "{{ .UserName }}",
           "foreground": "#f8f8f2",
-          "background": "#282a36",
+          "background": "#040506",
           "type": "session",
           "style": "diamond"
         },
         {
-          "properties": { "cache_duration": "none" },
-          "template": "\udb85\udc0b",
+          "template": "󱐋",
           "foreground": "#ff5555",
-          "powerline_symbol": "\ue0b0",
-          "background": "#282a36",
+          "powerline_symbol": "",
+          "background": "#040506",
           "type": "root",
           "style": "powerline"
         },
         {
-          "properties": { "cache_duration": "none" },
           "template": "{{ .Icon }}  ",
           "foreground": "#f8f8f2",
-          "powerline_symbol": "\ue0b0",
-          "background": "#282a36",
+          "powerline_symbol": "",
+          "background": "#040506",
           "type": "os",
           "style": "powerline"
         },
         {
-          "properties": {
-            "cache_duration": "none",
+          "options": {
             "style": "full"
           },
-          "trailing_diamond": "\ue0b4",
-          "template": " \udb80\ude56 {{ path .Path .Location }}",
+          "trailing_diamond": "",
+          "template": " 󰉖 {{ path .Path .Location }}",
           "foreground": "#282a36",
           "background": "#cccccc",
           "type": "path",
           "style": "diamond"
         },
         {
-          "properties": {
+          "type": "python",
+          "style": "diamond",
+          "leading_diamond": "",
+          "trailing_diamond": "",
+          "foreground": "#ffffff",
+          "background": "#306998",
+          "template": "  {{ if .Venv }}{{ .Venv }}{{ end }} ",
+          "options": {
+            "display_mode": "context"
+          }
+        },
+        {
+          "type": "node",
+          "style": "diamond",
+          "leading_diamond": "",
+          "trailing_diamond": "",
+          "foreground": "#ffffff",
+          "background": "#6CA35E",
+          "template": "  {{ .Full }} ",
+          "options": {
+            "display_mode": "context"
+          }
+        },
+        {
+          "type": "go",
+          "style": "diamond",
+          "leading_diamond": "",
+          "trailing_diamond": "",
+          "foreground": "#ffffff",
+          "background": "#00ADD8",
+          "template": "  {{ .Full }} ",
+          "options": {
+            "display_mode": "context"
+          }
+        },
+        {
+          "type": "rust",
+          "style": "diamond",
+          "leading_diamond": "",
+          "trailing_diamond": "",
+          "foreground": "#ffffff",
+          "background": "#CE422B",
+          "template": "  {{ .Full }} ",
+          "options": {
+            "display_mode": "context"
+          }
+        },
+        {
+          "type": "java",
+          "style": "diamond",
+          "leading_diamond": "",
+          "trailing_diamond": "",
+          "foreground": "#ffffff",
+          "background": "#F89820",
+          "template": "  {{ .Full }} ",
+          "options": {
+            "display_mode": "context"
+          }
+        },
+        {
+          "type": "kubectl",
+          "style": "diamond",
+          "leading_diamond": "",
+          "trailing_diamond": "",
+          "foreground": "#ffffff",
+          "background": "#326CE5",
+          "template": " ﴱ {{ .Context }}{{ if .Namespace }} :: {{ .Namespace }}{{ end }} ",
+          "options": {
+            "display_mode": "context"
+          }
+        },
+        {
+          "type": "docker",
+          "style": "diamond",
+          "leading_diamond": "",
+          "trailing_diamond": "",
+          "foreground": "#ffffff",
+          "background": "#0db7ed",
+          "template": "{{ if and (ne .Context \"default\") (ne .Context \"desktop-linux\") }}  {{ .Context }} {{ end }}"
+        },
+        {
+          "type": "aws",
+          "style": "diamond",
+          "leading_diamond": "",
+          "trailing_diamond": "",
+          "foreground": "#ffffff",
+          "background": "#FF9900",
+          "template": "  {{ .Profile }}{{ if .Region }} :: {{ .Region }}{{ end }} ",
+          "options": {
+            "display_default": false
+          }
+        },
+        {
+          "type": "terraform",
+          "style": "diamond",
+          "leading_diamond": "",
+          "trailing_diamond": "",
+          "foreground": "#ffffff",
+          "background": "#7B42BC",
+          "template": "  {{ .WorkspaceName }} "
+        },
+        {
+          "options": {
             "branch_icon": "",
-            "cache_duration": "none",
-            "display_changing_color": true,
             "fetch_status": true,
-            "fetch_upstream_icon": true,
-            "full_branch_path": true
+            "fetch_upstream_icon": true
           },
-          "leading_diamond": "\ue0b6",
-          "trailing_diamond": "\ue0b4",
-          "template": "\ue725 ({{ url .UpstreamIcon .UpstreamURL }} {{ url .HEAD .UpstreamURL }}){{ if gt .Ahead 0 }}<#282a36> +{{ .Ahead }}</>{{ end }}{{ if gt .Behind 0 }}<#ff5555> -{{ .Behind }}</>{{ end }}{{ if .Working.Changed }}<#282a36> \uf044 {{ .Working.String }}</>{{ end }}{{ if .Staging.Changed }}<#282a36> \uf046 {{ .Staging.String }}</>{{ end }}",
+          "leading_diamond": "",
+          "trailing_diamond": "",
+          "background_templates": [
+            "{{ if or (.Working.Changed) (.Staging.Changed) }}#e0a060{{ end }}",
+            "{{ if and (gt .Ahead 0) (gt .Behind 0) }}#e08060{{ end }}",
+            "{{ if gt .Ahead 0 }}#c8a050{{ end }}",
+            "{{ if gt .Behind 0 }}#d09050{{ end }}"
+          ],
+          "template": " ({{ url .UpstreamIcon .UpstreamURL }} {{ .HEAD }}){{ if gt .Ahead 0 }}<#282a36> +{{ .Ahead }}</>{{ end }}{{ if gt .Behind 0 }}<#ff5555> -{{ .Behind }}</>{{ end }}{{ if .Working.Changed }}<#282a36>  {{ .Working.String }}</>{{ end }}{{ if .Staging.Changed }}<#282a36>  {{ .Staging.String }}</>{{ end }}",
           "foreground": "#282a36",
           "background": "#ffb86c",
           "type": "git",
@@ -233,20 +334,42 @@ write_oh_my_posh_theme() {
     },
     {
       "type": "prompt",
-      "alignment": "left",
+      "alignment": "right",
       "segments": [
         {
-          "properties": {
-            "always_enabled": true,
-            "cache_duration": "none"
+          "type": "executiontime",
+          "style": "diamond",
+          "leading_diamond": "",
+          "trailing_diamond": "",
+          "foreground": "#000000",
+          "background": "#50fa7b",
+          "background_templates": [
+            "{{ if gt .Code 0 }}#ff5555{{ else }}#50fa7b{{ end }}"
+          ],
+          "template": " {{ if gt .Code 0 }}{{ else }}{{ end }} {{ .FormattedMs }} ",
+          "options": {
+            "threshold": 500,
+            "style": "austin",
+            "always_enabled": false
+          }
+        }
+      ]
+    },
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "newline": true,
+      "segments": [
+        {
+          "options": {
+            "always_enabled": true
           },
-          "template": "\u2570\u2500 ❯❯",
+          "template": "╰─ ❯❯",
           "foreground": "#f8f8f2",
           "type": "text",
-          "style": "diamond"
+          "style": "plain"
         }
-      ],
-      "newline": true
+      ]
     }
   ],
   "version": 3,
@@ -261,8 +384,7 @@ EOF
 install_zsh_plugins() {
     info "Installing Zsh, Oh-My-Zsh, and plugins..."
 
-    install_pacman_pkg zsh
-    install_pacman_pkgs curl git
+    install_pacman_pkgs zsh curl git
 
     if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
         info "Installing Oh-My-Zsh..."
@@ -272,7 +394,6 @@ install_zsh_plugins() {
     fi
 
     mkdir -p "$HOME/.oh-my-zsh/custom/plugins"
-
     local plugin_dir="$HOME/.oh-my-zsh/custom/plugins"
 
     [[ -d "$plugin_dir/zsh-autosuggestions" ]] \
@@ -293,7 +414,7 @@ install_zsh_plugins() {
 
     echo
     ok "Zsh plugins installed."
-    echo "Add this to ~/.zshrc:"
+    echo "Use this in ~/.zshrc:"
     echo 'plugins=(git archlinux zsh-autosuggestions zsh-syntax-highlighting zsh-completions you-should-use sudo command-not-found extract)'
 }
 
@@ -383,12 +504,28 @@ update_mirrorlist_if_requested() {
     run_sudo pacman -Syyu --noconfirm
 }
 
+install_problematic_optional_packages() {
+    if ! prompt_yes_no "Install experimental/problematic optional packages? (preload, pamac-aur)"; then
+        return 0
+    fi
+
+    warn "preload and pamac are not installed by default because they often break or are unnecessary on Arch."
+
+    if prompt_yes_no "Install preload?"; then
+        install_aur_pkg_optional preload
+    fi
+
+    if prompt_yes_no "Install pamac-aur?"; then
+        install_aur_pkg_optional pamac-aur
+    fi
+}
+
 final_checklist() {
     echo
     info "Final checklist"
 
-    echo "▶️ Preload service:"
-    systemctl is-enabled preload &>/dev/null && ok "preload is enabled." || warn "preload is not enabled."
+    echo "▶️ Oh-My-Posh:"
+    have_cmd oh-my-posh && ok "oh-my-posh is installed." || warn "oh-my-posh is not installed."
 
     echo "▶️ Intel Microcode:"
     pkg_installed intel-ucode && ok "intel-ucode is installed." || warn "intel-ucode is not installed."
@@ -435,10 +572,10 @@ FAILED_AUR_PACKAGES=()
 echo -e "\n========== ARCH HYPRLAND ESSENTIAL TOOLS SETUP =========="
 echo "This script installs core components for your Hyprland configuration:"
 echo "  • paru - AUR helper"
-echo "  • starship - modern shell prompt"
 echo "  • fonts - icons and UI display"
-echo "  • desktop/dev tools"
+echo "  • zsh + oh-my-zsh plugins"
 echo "  • oh-my-posh-bin + custom theme"
+echo "  • desktop/dev tools"
 echo "==========================================================="
 
 read -r -p "Do you want to continue with the installation? (y/n): " confirm
@@ -484,7 +621,7 @@ fi
 install_paru_if_needed
 
 if prompt_yes_no "Install Oh-My-Posh?"; then
-    install_aur_pkg oh-my-posh-bin || warn "Oh-My-Posh install failed. You can retry later with: install_aur_direct oh-my-posh-bin"
+    install_aur_pkg oh-my-posh-bin || warn "Oh-My-Posh install failed. Retry later with: paru -S oh-my-posh-bin"
 fi
 
 if prompt_yes_no "Install Oh-My-Posh custom theme?"; then
@@ -510,11 +647,9 @@ if prompt_yes_no "Install core desktop apps and tools?"; then
         trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat ufw gufw reflector \
         docker docker-compose github-cli discord telegram-desktop
 
-    # AUR packages are optional. Failures should not stop the whole setup.
+    # AUR-only optional packages.
+    # preload and pamac are intentionally excluded from default install.
     for pkg in \
-        preload \
-        libreoffice-fresh \
-        pamac-gtk \
         postman-bin \
         visual-studio-code-bin \
         archlinux-tweak-tool-git; do
@@ -524,6 +659,7 @@ fi
 
 configure_git_if_needed
 update_mirrorlist_if_requested
+install_problematic_optional_packages
 
 if prompt_yes_no "Update GRUB config?"; then
     if have_cmd grub-mkconfig; then
@@ -531,10 +667,6 @@ if prompt_yes_no "Update GRUB config?"; then
     else
         warn "grub-mkconfig not found. Skipping."
     fi
-fi
-
-if prompt_yes_no "Enable preload service?"; then
-    enable_service_if_exists preload
 fi
 
 if prompt_yes_no "Enable UFW firewall?"; then
@@ -565,9 +697,9 @@ final_checklist
 echo
 ok "Setup complete."
 echo "Manual notes:"
-echo "- For zoxide in zsh, add this to ~/.zshrc:"
+echo "- For zoxide in zsh:"
 echo '  eval "$(zoxide init zsh)"'
-echo "- For oh-my-posh in zsh, add this to ~/.zshrc if you want to use the custom theme:"
+echo "- For oh-my-posh in zsh:"
 echo '  eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/EDM115-newline.omp.json)"'
 echo "- Create SSH key if needed:"
 echo "  ssh-keygen -t ed25519"
