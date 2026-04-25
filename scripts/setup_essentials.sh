@@ -1,38 +1,164 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # ESSENTIAL SETUP SCRIPT
 # ======================
-# PURPOSE: Prepares your Arch Linux system with core tools needed for JaKooLit's Hyprland configs
+# PURPOSE:
+#   Prepare Arch Linux with core tools for Hyprland / JaKooLit-style configs.
+#
+# Improvements:
+#   - Fixes broken "DIMENSION" line.
+#   - Uses safer bash settings.
+#   - Supports paru, but falls back to direct AUR git clone + makepkg when paru RPC fails.
+#   - Uses oh-my-posh-bin instead of oh-my-posh to avoid building Go package from source.
+#   - Does not hard-fail the whole setup if one optional AUR package fails.
+#   - Enables services only when the package/service exists.
 #
 
-echo -e "\n========== ARCH HYPRLAND ESSENTIAL TOOLS SETUP =========="
-echo "This script installs the core components needed for your Hyprland configuration:"
-echo "  • Paru - AUR helper"
-echo "  • Starship - Modern shell prompt"
-echo "  • Fonts - For icons and UI display"
-echo "  • Full app suite (VSCode, Python, Node.js, etc.)"
-echo "  • Oh-My-Posh theme"
-echo "==========================================================="
+set -Eeuo pipefail
 
-read -p "Do you want to continue with the installation? (y/n): " confirm
-if DIMENSION
-[[ ! "$confirm" =~ ^[Yy]$ ]]; then
-    echo "Setup cancelled."
-    exit 0
-fi
+# -----------------------------
+# Helpers
+# -----------------------------
 
-# Select mode
-echo -e "\nInstall mode:"
-echo "1) Automatic - Install everything without asking"
-echo "2) Interactive (default) - Confirm before each major step"
-echo "3) Install Oh-My-Posh Theme Only"
-echo "4) Install Zsh Plugins Only"
-read -p "Choose [1/2/3/4] (default 2): " mode
+info() { echo -e "\n==> $*"; }
+ok() { echo "✅ $*"; }
+warn() { echo "⚠️  $*"; }
+err() { echo "❌ $*" >&2; }
 
-if [[ "$mode" == "3" ]]; then
-    echo -e "\nInstalling Oh-My-Posh Theme..."
-    mkdir -p ~/.config/ohmyposh
-    cat << 'EOF' > ~/.config/ohmyposh/EDM115-newline.omp.json
+run_sudo() {
+    sudo "$@"
+}
+
+have_cmd() {
+    command -v "$1" &>/dev/null
+}
+
+pkg_installed() {
+    pacman -Q "$1" &>/dev/null
+}
+
+aur_clone_url() {
+    local pkg="$1"
+    echo "https://aur.archlinux.org/${pkg}.git"
+}
+
+prompt_yes_no() {
+    local question="$1"
+    if [[ "${AUTO_MODE:-false}" == "true" ]]; then
+        return 0
+    fi
+
+    local yn
+    while true; do
+        read -r -p "$question (y/n): " yn
+        case "$yn" in
+            [Yy]*) return 0 ;;
+            [Nn]*) return 1 ;;
+            *) echo "Please answer y or n." ;;
+        esac
+    done
+}
+
+install_pacman_pkg() {
+    local pkg="$1"
+
+    if pkg_installed "$pkg"; then
+        ok "$pkg is already installed. Skipping."
+        return 0
+    fi
+
+    info "Installing $pkg..."
+    run_sudo pacman -S --needed --noconfirm "$pkg"
+}
+
+install_pacman_pkgs() {
+    local pkgs=("$@")
+    local missing=()
+
+    for pkg in "${pkgs[@]}"; do
+        if ! pkg_installed "$pkg"; then
+            missing+=("$pkg")
+        else
+            ok "$pkg is already installed. Skipping."
+        fi
+    done
+
+    if (( ${#missing[@]} > 0 )); then
+        info "Installing pacman packages: ${missing[*]}"
+        run_sudo pacman -S --needed --noconfirm "${missing[@]}"
+    fi
+}
+
+install_aur_direct() {
+    local pkg="$1"
+    local build_dir="/tmp/${pkg}"
+
+    if pkg_installed "$pkg"; then
+        ok "$pkg is already installed. Skipping."
+        return 0
+    fi
+
+    info "Installing $pkg from AUR via git + makepkg..."
+    rm -rf "$build_dir"
+
+    if ! git clone "$(aur_clone_url "$pkg")" "$build_dir"; then
+        err "Failed to clone AUR package: $pkg"
+        return 1
+    fi
+
+    (
+        cd "$build_dir"
+        makepkg -si --noconfirm
+    )
+}
+
+install_aur_pkg() {
+    local pkg="$1"
+
+    if pkg_installed "$pkg"; then
+        ok "$pkg is already installed. Skipping."
+        return 0
+    fi
+
+    if have_cmd paru; then
+        info "Installing $pkg with paru..."
+        if paru -S --needed --noconfirm "$pkg"; then
+            return 0
+        fi
+
+        warn "paru failed for $pkg. Falling back to direct AUR git + makepkg."
+    else
+        warn "paru not found. Falling back to direct AUR git + makepkg for $pkg."
+    fi
+
+    install_aur_direct "$pkg"
+}
+
+install_aur_pkg_optional() {
+    local pkg="$1"
+
+    if ! install_aur_pkg "$pkg"; then
+        warn "Skipping optional AUR package: $pkg"
+        FAILED_AUR_PACKAGES+=("$pkg")
+        return 0
+    fi
+}
+
+enable_service_if_exists() {
+    local service="$1"
+
+    if systemctl list-unit-files "${service}.service" &>/dev/null; then
+        info "Enabling $service..."
+        run_sudo systemctl enable --now "$service" || warn "Could not enable $service."
+    else
+        warn "Service not found: $service. Skipping."
+    fi
+}
+
+write_oh_my_posh_theme() {
+    mkdir -p "$HOME/.config/ohmyposh"
+
+    cat > "$HOME/.config/ohmyposh/EDM115-newline.omp.json" << 'EOF'
 {
   "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
   "blocks": [
@@ -41,18 +167,14 @@ if [[ "$mode" == "3" ]]; then
       "alignment": "left",
       "segments": [
         {
-          "properties": {
-            "cache_duration": "none"
-          },
+          "properties": { "cache_duration": "none" },
           "template": "\n\u256d\u2500",
           "foreground": "#f8f8f2",
           "type": "text",
           "style": "plain"
         },
         {
-          "properties": {
-            "cache_duration": "none"
-          },
+          "properties": { "cache_duration": "none" },
           "leading_diamond": "\ue0b6",
           "template": "{{ .UserName }}",
           "foreground": "#f8f8f2",
@@ -61,9 +183,7 @@ if [[ "$mode" == "3" ]]; then
           "style": "diamond"
         },
         {
-          "properties": {
-            "cache_duration": "none"
-          },
+          "properties": { "cache_duration": "none" },
           "template": "\udb85\udc0b",
           "foreground": "#ff5555",
           "powerline_symbol": "\ue0b0",
@@ -72,9 +192,7 @@ if [[ "$mode" == "3" ]]; then
           "style": "powerline"
         },
         {
-          "properties": {
-            "cache_duration": "none"
-          },
+          "properties": { "cache_duration": "none" },
           "template": "{{ .Icon }}  ",
           "foreground": "#f8f8f2",
           "powerline_symbol": "\ue0b0",
@@ -136,250 +254,334 @@ if [[ "$mode" == "3" ]]; then
   "final_space": true
 }
 EOF
-    echo "✅ Oh-My-Posh theme (EDM115-newline) installed at ~/.config/ohmyposh/EDM115-newline.omp.json"
-    exit 0
-fi
 
-if [[ "$mode" == "4" ]]; then
-    echo -e "\nInstalling Zsh, Oh-My-Zsh, and additional plugins..."
-    # Install Zsh
-    if command -v zsh &>/dev/null; then
-        echo "✅ Zsh already installed. Skipping."
-    else
-        echo "⬇️ Installing zsh..."
-        sudo pacman -S --noconfirm zsh
-    fi
-    # Install Oh-My-Zsh
+    ok "Oh-My-Posh theme installed: ~/.config/ohmyposh/EDM115-newline.omp.json"
+}
+
+install_zsh_plugins() {
+    info "Installing Zsh, Oh-My-Zsh, and plugins..."
+
+    install_pacman_pkg zsh
+    install_pacman_pkgs curl git
+
     if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" --unattended
+        info "Installing Oh-My-Zsh..."
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
     else
-        echo "✅ Oh-My-Zsh already installed. Skipping."
+        ok "Oh-My-Zsh already installed. Skipping."
     fi
-    # Install additional plugins
-    mkdir -p ~/.oh-my-zsh/custom/plugins
-    cd ~/.oh-my-zsh/custom/plugins
-    [[ -d zsh-autosuggestions ]] && echo "✅ zsh-autosuggestions already installed. Skipping." || git clone https://github.com/zsh-users/zsh-autosuggestions.git
-    [[ -d zsh-syntax-highlighting ]] && echo "✅ zsh-syntax-highlighting already installed. Skipping." || git clone https://github.com/zsh-users/zsh-syntax-highlighting.git
-    [[ -d zsh-completions ]] && echo "✅ zsh-completions already installed. Skipping." || git clone https://github.com/zsh-users/zsh-completions.git
-    [[ -d you-should-use ]] && echo "✅ you-should-use already installed. Skipping." || git clone https://github.com/MichaelAquilina/zsh-you-should-use.git
-    echo -e "\n✅ Zsh plugins installed. Please add the following to your ~/.zshrc:"
-    echo "plugins=(git archlinux zsh-autosuggestions zsh-syntax-highlighting zsh-completions you-should-use sudo command-not-found extract)"
-    exit 0
-fi
 
-if [[ -z "$mode" || "$mode" == "2" ]]; then
-    AUTO_MODE=false
-else
-    AUTO_MODE=true
-fi
+    mkdir -p "$HOME/.oh-my-zsh/custom/plugins"
 
-set -e
+    local plugin_dir="$HOME/.oh-my-zsh/custom/plugins"
 
-prompt_yes_no() {
-    [[ "$AUTO_MODE" == "true" ]] && return 0
-    while true; do
-        read -p "$1 (y/n): " yn
-        case "$yn" in
-            [Yy]*) return 0 ;;
-            [Nn]*) return 1 ;;
-            *) echo "Please answer yes or no." ;;
-        esac
-    done
+    [[ -d "$plugin_dir/zsh-autosuggestions" ]] \
+        && ok "zsh-autosuggestions already installed." \
+        || git clone https://github.com/zsh-users/zsh-autosuggestions.git "$plugin_dir/zsh-autosuggestions"
+
+    [[ -d "$plugin_dir/zsh-syntax-highlighting" ]] \
+        && ok "zsh-syntax-highlighting already installed." \
+        || git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$plugin_dir/zsh-syntax-highlighting"
+
+    [[ -d "$plugin_dir/zsh-completions" ]] \
+        && ok "zsh-completions already installed." \
+        || git clone https://github.com/zsh-users/zsh-completions.git "$plugin_dir/zsh-completions"
+
+    [[ -d "$plugin_dir/you-should-use" ]] \
+        && ok "you-should-use already installed." \
+        || git clone https://github.com/MichaelAquilina/zsh-you-should-use.git "$plugin_dir/you-should-use"
+
+    echo
+    ok "Zsh plugins installed."
+    echo "Add this to ~/.zshrc:"
+    echo 'plugins=(git archlinux zsh-autosuggestions zsh-syntax-highlighting zsh-completions you-should-use sudo command-not-found extract)'
 }
 
-install_pacman_pkg() {
-    pkg="$1"
-    if pacman -Q "$pkg" &>/dev/null; then
-        echo "✅ $pkg is already installed. Skipping."
+install_paru_if_needed() {
+    if have_cmd paru; then
+        ok "paru already installed. Skipping."
+        return 0
+    fi
+
+    if ! prompt_yes_no "Install paru (AUR helper)?"; then
+        warn "paru skipped. AUR packages will use direct git + makepkg fallback."
+        return 0
+    fi
+
+    install_pacman_pkgs git base-devel
+
+    info "Installing paru from AUR..."
+    rm -rf /tmp/paru
+
+    if git clone https://aur.archlinux.org/paru.git /tmp/paru; then
+        (
+            cd /tmp/paru
+            makepkg -si --noconfirm
+        )
     else
-        echo "⬇️ Installing $pkg..."
-        sudo pacman -S --noconfirm "$pkg"
+        warn "Could not clone paru. Continuing without paru."
     fi
 }
 
-install_paru_pkg() {
-    pkg="$1"
-    if paru -Q "$pkg" &>/dev/null; then
-        echo "✅ $pkg is already installed (AUR). Skipping."
-    else
-        echo "⬇️ Installing $pkg (from AUR)..."
-        paru -S --noconfirm "$pkg"
+configure_git_if_needed() {
+    local git_username
+    local git_email
+
+    git_username=$(git config --global --get user.name || true)
+    git_email=$(git config --global --get user.email || true)
+
+    if [[ -n "$git_username" && -n "$git_email" ]]; then
+        echo
+        ok "Git is already configured:"
+        echo "user.name: $git_username"
+        echo "user.email: $git_email"
+        return 0
     fi
-}
 
-install_pacman_pkg git
-install_pacman_pkg base-devel
+    echo
+    warn "No global Git user.name or user.email found."
 
-if ! command -v paru &>/dev/null; then
-    prompt_yes_no "Install paru (AUR helper)?" && {
-        cd /tmp
-        git clone https://aur.archlinux.org/paru.git
-        cd paru
-        makepkg -si --noconfirm
-    }
-else
-    echo "✅ paru already installed. Skipping."
-fi
+    if prompt_yes_no "Configure Git username, email, and default branch?"; then
+        read -r -p "Enter your Git username: " git_username
+        read -r -p "Enter your Git email: " git_email
 
-# Check starship
-if command -v starship &>/dev/null; then
-    echo "✅ Starship already installed. Skipping."
-else
-    prompt_yes_no "Install Starship prompt?" && install_pacman_pkg starship
-fi
-
-# Check oh-my-posh
-if command -v oh-my-posh &>/dev/null; then
-    echo "✅ oh-my-posh already installed. Skipping."
-else
-    prompt_yes_no "Install oh-my-posh?" && install_paru_pkg oh-my-posh
-fi
-
-prompt_yes_no "Install fonts?" && {
-    install_pacman_pkg ttf-jetbrains-mono-nerd
-    install_pacman_pkg noto-fonts
-    install_pacman_pkg noto-fonts-emoji
-}
-
-prompt_yes_no "Install core desktop apps & tools?" && {
-    for pkg in \
-        p7zip unrar tar rsync git neofetch htop nano exfatprogs ntfs-3g flac jasper aria2 curl wget \
-        cmake clang imagemagick go timeshift btop zoxide firefox vlc gimp qt6-multimedia-ffmpeg krita thunderbird \
-        trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat ufw gufw reflector; do
-        install_pacman_pkg "$pkg"
-    done
-
-    for pkg in \
-        preload libreoffice-fresh pamac-gtk discord telegram-desktop postman-bin docker visual-studio-code-bin \
-        github-cli docker-compose archlinux-tweak-tool-git; do
-        install_paru_pkg "$pkg"
-    done
-}
-
-# Check current Git config
-git_username=$(git config --global --get user.name || true)
-git_email=$(git config --global --get user.email || true)
-
-if [[ -n "$git_username" && -n "$git_email" ]]; then
-    echo -e "\n✅ Git is already configured as:"
-    echo "user.name: $git_username"
-    echo "user.email: $git_email"
-    echo "🔹 Skipping Git configuration."
-else
-    echo -e "\n⚠️ No Git user.name or email set."
-    prompt_yes_no "Do you want to configure Git (username, email, default branch)?" && {
-        read -p "Enter your Git username: " git_username
-        read -p "Enter your Git email: " git_email
         git config --global user.name "$git_username"
         git config --global user.email "$git_email"
         git config --global color.ui auto
         git config --global init.defaultBranch main
         git config --global core.editor nano
-        echo "✅ Git configuration has been updated."
-    }
-fi
 
-# Update mirrorlist with reflector (confirm loop)
-prompt_yes_no "Do you want to update the mirrorlist now?" && {
+        ok "Git configuration updated."
+    fi
+}
+
+update_mirrorlist_if_requested() {
+    if ! prompt_yes_no "Update mirrorlist with reflector now?"; then
+        return 0
+    fi
+
+    install_pacman_pkg reflector
+
     while true; do
-        sudo reflector --verbose --latest 10 --protocol https --sort rate --download-timeout 20 --save /etc/pacman.d/mirrorlist
-        echo -e "\n🔍 Current top 5 mirrors:"
-        head -n 20 /etc/pacman.d/mirrorlist
+        run_sudo reflector \
+            --verbose \
+            --latest 10 \
+            --protocol https \
+            --sort rate \
+            --download-timeout 20 \
+            --save /etc/pacman.d/mirrorlist
+
+        echo
+        info "Current mirrorlist preview:"
+        head -n 20 /etc/pacman.d/mirrorlist || true
 
         prompt_yes_no "Are you satisfied with this mirrorlist?" && break
-        echo -e "\n🔁 Re-running reflector to fetch new mirrors...\n"
+        echo
+        info "Re-running reflector..."
     done
 
-    sudo pacman -Syyu
+    run_sudo pacman -Syyu --noconfirm
 }
 
-# Update GRUB config
-prompt_yes_no "Update GRUB config (important if intel-ucode installed)?" && {
-    sudo grub-mkconfig -o /boot/grub/grub.cfg
+final_checklist() {
+    echo
+    info "Final checklist"
+
+    echo "▶️ Preload service:"
+    systemctl is-enabled preload &>/dev/null && ok "preload is enabled." || warn "preload is not enabled."
+
+    echo "▶️ Intel Microcode:"
+    pkg_installed intel-ucode && ok "intel-ucode is installed." || warn "intel-ucode is not installed."
+
+    echo "▶️ Docker service:"
+    systemctl is-active docker &>/dev/null && ok "Docker is active." || warn "Docker is not running."
+
+    echo "▶️ UFW firewall:"
+    systemctl is-active ufw &>/dev/null && ok "UFW is active." || warn "UFW is not active."
+
+    echo "▶️ UFW default policies:"
+    if have_cmd ufw; then
+        run_sudo ufw status verbose | grep "Default" || warn "Could not retrieve UFW default policies."
+    else
+        warn "ufw command not found."
+    fi
+
+    echo "▶️ Mirrorlist:"
+    grep -q "https" /etc/pacman.d/mirrorlist && ok "Mirrorlist contains HTTPS mirrors." || warn "Mirrorlist may not be updated."
+
+    echo "▶️ Docker group:"
+    if groups "$USER" | grep -qw docker; then
+        ok "User '$USER' is in docker group."
+    else
+        warn "User '$USER' is not in docker group."
+    fi
+
+    echo "▶️ GRUB config:"
+    [[ -f /boot/grub/grub.cfg ]] && ok "GRUB config exists." || warn "GRUB config not found."
+
+    if (( ${#FAILED_AUR_PACKAGES[@]} > 0 )); then
+        echo
+        warn "Some optional AUR packages failed or were skipped:"
+        printf ' - %s\n' "${FAILED_AUR_PACKAGES[@]}"
+    fi
 }
 
-# Enable preload service
-sudo systemctl enable --now preload
+# -----------------------------
+# Main
+# -----------------------------
 
-# Enable UFW firewall
-sudo systemctl enable --now ufw
-sudo ufw enable
-prompt_yes_no "Set UFW to deny incoming and allow outgoing connections?" && {
-    sudo ufw default deny incoming
-    sudo ufw default allow outgoing
-}
+FAILED_AUR_PACKAGES=()
 
-# Enable Docker and add user to docker group
-if groups $USER | grep -qw docker; then
-    docker_group_status="✅ User '$USER' is already in docker group. Skipping."
-    echo -e "\n$docker_group_status"
-else
-    docker_group_status="⚠️ User '$USER' is NOT in docker group."
-    prompt_yes_no "Enable Docker and add user to docker group?" && {
-        sudo systemctl enable --now docker
-        sudo usermod -aG docker $USER
-        echo "⚠️ Please reboot your system to apply Docker group permissions."
-    }
+echo -e "\n========== ARCH HYPRLAND ESSENTIAL TOOLS SETUP =========="
+echo "This script installs core components for your Hyprland configuration:"
+echo "  • paru - AUR helper"
+echo "  • starship - modern shell prompt"
+echo "  • fonts - icons and UI display"
+echo "  • desktop/dev tools"
+echo "  • oh-my-posh-bin + custom theme"
+echo "==========================================================="
+
+read -r -p "Do you want to continue with the installation? (y/n): " confirm
+if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+    echo "Setup cancelled."
+    exit 0
 fi
 
-# Final checklist
-echo -e "\n🔍 Final checklist for your system:\n"
+echo -e "\nInstall mode:"
+echo "1) Automatic - install everything without asking"
+echo "2) Interactive (default) - confirm each major step"
+echo "3) Install Oh-My-Posh theme only"
+echo "4) Install Zsh plugins only"
+read -r -p "Choose [1/2/3/4] (default 2): " mode
 
-# Check if preload service is active
-echo "▶️ Checking Preload service..."
-systemctl is-enabled preload &>/dev/null && echo "✅ Preload is enabled." || echo "⚠️ Preload is NOT enabled."
+case "${mode:-2}" in
+    1) AUTO_MODE=true ;;
+    2) AUTO_MODE=false ;;
+    3)
+        write_oh_my_posh_theme
+        exit 0
+        ;;
+    4)
+        AUTO_MODE=false
+        install_zsh_plugins
+        exit 0
+        ;;
+    *)
+        warn "Invalid mode. Using interactive mode."
+        AUTO_MODE=false
+        ;;
+esac
 
-# Check if intel-ucode package is installed
-echo "▶️ Checking Intel Microcode (intel-ucode)..."
-pacman -Q intel-ucode &>/dev/null && echo "✅ intel-ucode is installed." || echo "⚠️ intel-ucode is NOT installed."
+# Make git more tolerant on networks where HTTP/2/TLS is unstable.
+git config --global http.version HTTP/1.1 || true
 
-# Check if Docker service is running
-echo "▶️ Checking Docker service..."
-systemctl is-active docker &>/dev/null && echo "✅ Docker service is active." || echo "⚠️ Docker service is NOT running."
+install_pacman_pkgs git base-devel ca-certificates curl openssl
 
-# Check if UFW firewall is active
-echo "▶️ Checking UFW firewall..."
-systemctl is-active ufw &>/dev/null && echo "✅ UFW is active." || echo "⚠️ UFW is NOT active."
-
-# Check UFW default policies
-echo "▶️ Checking UFW default policies..."
-sudo ufw status verbose | grep "Default" || echo "⚠️ Could not retrieve UFW default policies."
-
-# Check if Reflector updated the mirrorlist
-echo "▶️ Checking if mirrorlist was updated by Reflector..."
-if grep -q "https" /etc/pacman.d/mirrorlist; then
-    echo "✅ Mirrorlist seems updated (contains HTTPS mirrors)."
-else
-    echo "⚠️ Mirrorlist might not be updated. Please run reflector manually."
+if have_cmd update-ca-trust; then
+    run_sudo update-ca-trust || true
 fi
 
-# Show Docker group status
-echo -e "\n▶️ Docker group status:"
-echo "$docker_group_status"
+install_paru_if_needed
 
-# Check if GRUB config exists
-echo "▶️ Checking GRUB config..."
-if [[ -f /boot/grub/grub.cfg ]]; then
-    echo "✅ GRUB config file exists."
-else
-    echo "⚠️ GRUB config file not found. Please run grub-mkconfig."
+if prompt_yes_no "Install Starship prompt?"; then
+    install_pacman_pkg starship
 fi
 
-# Final message
-echo -e "\n✅ Setup complete!"
-echo "⚡ Please complete these manual steps (not fully automated):"
-echo "- Edit /etc/pacman.conf to enable ParallelDownloads and add ILoveCandy"
-echo "- Setup shell integration for Zoxide (add 'eval \"\$(zoxide init bash)\"' to ~/.bashrc)"
-echo "- Create SSH Key if needed: ssh-keygen -t ed25519"
-echo "- Create Timeshift snapshot before major updates: timeshift --create"
-echo "- Review and fine-tune UFW firewall rules: ufw allow/deny <ports>"
-echo "- (Optional) Switch Desktop Manager: disable GDM, enable SDDM"
-echo "- Regularly update system: sudo pacman -Syu && paru -Syu"
-echo "- Clean up old package caches: sudo pacman -Sc"
-echo "- Check system services: systemctl status"
-echo "- Monitor disk usage: df -h"
-echo "- Identify and remove orphan packages: sudo pacman -Rns \$(pacman -Qtdq)"
-echo "- Customize system settings to fit your needs"
-echo -e "\n📚 Refer to the full Arch Linux First Setup Guide for detailed instructions."
+if prompt_yes_no "Install Oh-My-Posh?"; then
+    install_aur_pkg oh-my-posh-bin || warn "Oh-My-Posh install failed. You can retry later with: install_aur_direct oh-my-posh-bin"
+fi
+
+if prompt_yes_no "Install Oh-My-Posh custom theme?"; then
+    write_oh_my_posh_theme
+fi
+
+if prompt_yes_no "Install fonts?"; then
+    install_pacman_pkgs \
+        ttf-jetbrains-mono-nerd \
+        noto-fonts \
+        noto-fonts-emoji \
+        ttf-font-awesome
+fi
+
+if prompt_yes_no "Install Zsh plugins?"; then
+    install_zsh_plugins
+fi
+
+if prompt_yes_no "Install core desktop apps and tools?"; then
+    install_pacman_pkgs \
+        p7zip unrar tar rsync git fastfetch htop nano exfatprogs ntfs-3g flac jasper aria2 curl wget \
+        cmake clang imagemagick go timeshift btop zoxide firefox vlc gimp qt6-multimedia-ffmpeg krita thunderbird \
+        trash-cli iputils inetutils intel-ucode obs-studio python python-pip nodejs npm bat ufw gufw reflector \
+        docker docker-compose github-cli
+
+    # AUR packages are optional. Failures should not stop the whole setup.
+    for pkg in \
+        preload \
+        libreoffice-fresh \
+        pamac-gtk \
+        discord \
+        telegram-desktop \
+        postman-bin \
+        visual-studio-code-bin \
+        archlinux-tweak-tool-git; do
+        install_aur_pkg_optional "$pkg"
+    done
+fi
+
+configure_git_if_needed
+update_mirrorlist_if_requested
+
+if prompt_yes_no "Update GRUB config?"; then
+    if have_cmd grub-mkconfig; then
+        run_sudo grub-mkconfig -o /boot/grub/grub.cfg
+    else
+        warn "grub-mkconfig not found. Skipping."
+    fi
+fi
+
+if prompt_yes_no "Enable preload service?"; then
+    enable_service_if_exists preload
+fi
+
+if prompt_yes_no "Enable UFW firewall?"; then
+    install_pacman_pkg ufw
+    enable_service_if_exists ufw
+
+    if prompt_yes_no "Set UFW default deny incoming and allow outgoing?"; then
+        run_sudo ufw default deny incoming
+        run_sudo ufw default allow outgoing
+        run_sudo ufw --force enable
+    fi
+fi
+
+if prompt_yes_no "Enable Docker and add current user to docker group?"; then
+    install_pacman_pkgs docker docker-compose
+    enable_service_if_exists docker
+
+    if ! groups "$USER" | grep -qw docker; then
+        run_sudo usermod -aG docker "$USER"
+        warn "Reboot or log out/in to apply Docker group permissions."
+    else
+        ok "User '$USER' is already in docker group."
+    fi
+fi
+
+final_checklist
+
+echo
+ok "Setup complete."
+echo "Manual notes:"
+echo "- For zoxide in zsh, add this to ~/.zshrc:"
+echo '  eval "$(zoxide init zsh)"'
+echo "- For starship in zsh, add this to ~/.zshrc:"
+echo '  eval "$(starship init zsh)"'
+echo "- For oh-my-posh in zsh, add this to ~/.zshrc if you want to use the custom theme:"
+echo '  eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/EDM115-newline.omp.json)"'
+echo "- Create SSH key if needed:"
+echo "  ssh-keygen -t ed25519"
+echo "- Update regularly:"
+echo "  sudo pacman -Syu && paru -Syu"
+echo "- Remove orphan packages carefully:"
+echo '  sudo pacman -Rns $(pacman -Qtdq)'
 
 exit 0
